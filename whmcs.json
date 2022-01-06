@@ -1,0 +1,31 @@
+{
+    "schema": "1.0",
+    "type": "whmcs-servers",
+    "name": "NovoServe Console Module",
+    "license": "MIT",
+    "category": "provisioning",
+    "description": {
+        "name": "NovoServe Console Module",
+        "tagline": "Allows your customers to access server consoles.",
+        "long": "Allows your customers to access server consoles.",
+        "features": [
+            "Allows your customers to access server consoles."
+        ]
+    },
+    "logo": {
+        "filename": "logo.png"
+    },
+    "support": {
+        "homepage": "https:\/\/www.novoserve.com\/",
+        "learn_more": "https:\/\/www.novoserve.com\/",
+        "email": "support@novoserve.com",
+        "support_url": "https:\/\/portal.novoserve.com\/",
+        "docs_url": "https:\/\/github.com\/novoserve\/whmcs-module"
+    },
+    "authors": [
+        {
+            "name": "NovoServe B.V.",
+            "homepage": "https:\/\/www.novoserve.com\/"
+        }
+    ]
+}
