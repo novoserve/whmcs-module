@@ -186,7 +186,7 @@ function novoserveconsole_generateConsoleLink($serverTag, $whiteLabel, $apiKey, 
 {
     $curl = curl_init();
     curl_setopt_array($curl, array(
-        CURLOPT_URL => 'https://capi.novoserve.com/v0/servers/'.urlencode(trim($serverTag)).'/ipmi-link',
+        CURLOPT_URL => 'https://api.novoserve.com/v0/servers/'.urlencode(trim($serverTag)).'/ipmi-link',
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_ENCODING => '',
         CURLOPT_MAXREDIRS => 10,
