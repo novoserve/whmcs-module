@@ -95,15 +95,15 @@ function novoserveconsole_AdminServicesTabFields(array $params)
         $serverTag = $params['username'];
         $whiteLabel = ($whiteLabel == 'on' ? 'yes' : 'no');
 
-        if (!novoserveconsole_checkTag($serverTag)) {
-            return ['Console' => 'No server tag found, please ensure that you have entered the server tag in the Username field.'];
-        }
-
         $generateLink = novoserveconsole_generateConsoleLink($serverTag, $whiteLabel, $apiKey, $apiSecret);
-        if (isset($generateLink['status']) && $generateLink['status'] == 'success') {
-            return ['Console' => '<a href="' . $generateLink['results'] . '" target="_blank" class="btn btn-primary">Autologin IPMI</a>'];
+        if (!$generateLink && !isset($generateLink['status']) && $generateLink['status'] != 'success') {
+            if (!$generateLink) {
+                return ['Console' => 'No server tag found, please ensure that you have entered the server tag in the Username field.'];
+            } else {
+                return ['Console' => 'Could not generate console link, error: '.$generateLink['results']];
+            }
         } else {
-            return ['Console' => 'Could not generate console link, error: '.$generateLink['results']];
+            return ['Console' => '<a href="' . $generateLink['results'] . '" target="_blank" class="btn btn-primary">Autologin IPMI</a>'];
         }
 
     } catch (Exception $e) {
@@ -162,10 +162,10 @@ function novoserveconsole_ClientArea(array $params)
 
         if ($serviceStatus == 'Active') {
             $generateLink = novoserveconsole_generateConsoleLink($serverTag, $whiteLabel, $apiKey, $apiSecret);
-            if (isset($generateLink['status']) && $generateLink['status'] == 'success') {
-                return '<a href="' . $generateLink['results'] . '" target="_blank" class="btn btn-primary btn-lg">Autologin IPMI</a>';
-            } else {
+            if (!$generateLink && !isset($generateLink['status']) && $generateLink['status'] != 'success') {
                 return '<input type="button" class="btn btn-primary btn-lg" value="Autologin IPMI" disabled>';
+            } else {
+                return '<a href="' . $generateLink['results'] . '" target="_blank" class="btn btn-primary btn-lg">Autologin IPMI</a>';
             }
         } else {
             return;
@@ -184,6 +184,10 @@ function novoserveconsole_ClientArea(array $params)
 
 function novoserveconsole_generateConsoleLink($serverTag, $whiteLabel, $apiKey, $apiSecret)
 {
+    if (!novoserveconsole_checkTag($serverTag)) {
+        return false;
+    }
+
     $curl = curl_init();
     curl_setopt_array($curl, array(
         CURLOPT_URL => 'https://api.novoserve.com/v0/servers/'.urlencode(trim($serverTag)).'/ipmi-link',
