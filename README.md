@@ -1,9 +1,9 @@
-# NovoServe WHMCS Console Module
+# NovoServe WHMCS Module
 
 ### Introduction
 
-This provisioning module allows you as a reseller to offer IPMI console links (SSO).
-WIth just one click they will be automatically logged in. Currently, this is the core functionality of this module.
+This provisioning module allows you as a reseller to offer your customers full server management.
+With just one click they will be automatically logged in. Currently, this is the core functionality of this module.
 For the admin convenience we also added the login ability from the WHMCS admin side, this allows you to quickly access the IPMI of your customer.
 
 Current features:
