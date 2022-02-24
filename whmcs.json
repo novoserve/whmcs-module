@@ -1,15 +1,15 @@
 {
     "schema": "1.0",
     "type": "whmcs-servers",
-    "name": "NovoServe Console Module",
+    "name": "NovoServe Module",
     "license": "MIT",
     "category": "provisioning",
     "description": {
-        "name": "NovoServe Console Module",
-        "tagline": "Allows your customers to access server consoles.",
-        "long": "Allows your customers to access server consoles.",
+        "name": "NovoServe Module",
+        "tagline": "Allows your customers to manage their NovoServe server.",
+        "long": "Allows your customers to manage their NovoServe server.",
         "features": [
-            "Allows your customers to access server consoles."
+            "Allows your customers to manage their NovoServe server."
         ]
     },
     "logo": {

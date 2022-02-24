@@ -1,15 +1,16 @@
-# NovoServe WHMCS Console Module
+# NovoServe WHMCS Module
 
 ### Introduction
 
-This provisioning module allows you as a reseller to offer IPMI console links (SSO).
-WIth just one click they will be automatically logged in. Currently, this is the core functionality of this module.
-For the admin convenience we also added the login ability from the WHMCS admin side, this allows you to quickly access the IPMI of your customer.
+This provisioning module allows you as a reseller to offer your customers full server management.
+With just one click they are able to login to the IPMI of the server (e.g. HPE iLO). This feature is also available as an administrator.
 
-Current features:
+Features:
 - Autologin IPMI for the clientarea;
 - Autologin IPMI for the admin side;
 - Whitelabel console URL generation;
+- Server power management;
+- Bandwidth usage graph.
 
 ### Requirements
 - WHMCS 7.x or 8.x;
@@ -20,8 +21,8 @@ Current features:
 
 1. Upload the contents of the ZIP into your WHMCS root directory.
 2. Setup a new or use an existing Product:
-3. Under Module Settings, select the "NovoServe Console Module".
-4. Now enter your API credentials accordingly and decide if you want whitelabel consoles (without any logo), or the default NovoServe branded.
+3. Under Module Settings, select the "NovoServe Module".
+4. Now enter your API credentials accordingly and decide if you want whitelabel consoles (without any logo), or the default NovoServe branded. If you want to use the whitelabel console then enter "yes" in the textbox. For resellers with the branded console can also use their ID here.
 5. Go to a service that uses this (newly) product and ensure that the Username contains a server tag (000-000). This is a requirement.
 
 Note: Ensure that you added the IP address of your WHMCS instance to the API ACL in our portal.

@@ -1,0 +1,12 @@
+{
+    "require": {
+        "php": ">=7.4",
+        "ext-curl": "*",
+        "ext-json": "*"
+    },
+    "autoload": {
+        "classmap": [
+            "libs"
+        ]
+    }
+}
