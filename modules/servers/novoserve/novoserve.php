@@ -98,7 +98,7 @@ function novoserve_AdminServicesTabFields(array $params)
         // Get all service details;
         $apiKey = $params['configoption1'];
         $apiSecret = $params['configoption2'];
-        $whiteLabel = !is_string($params['configoption3']) ?: 'yes';
+        $whiteLabel = is_string($params['configoption3']) ? $params['configoption3'] : 'yes';
         $serverTag = new AssetTag($params['username']);
 
         // Create API object;
@@ -162,7 +162,7 @@ function novoserve_ClientArea(array $params)
         // Get all service details;
         $apiKey = $params['configoption1'];
         $apiSecret = $params['configoption2'];
-        $whiteLabel = !is_string($params['configoption3']) ?: 'yes';
+        $whiteLabel = is_string($params['configoption3']) ? $params['configoption3'] : 'yes';
         $serverTag = new AssetTag($params['username']);
         $serviceStatus = $params['status'];
 
