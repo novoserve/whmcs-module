@@ -12,6 +12,9 @@ Features:
 - Server power management;
 - Bandwidth usage graph.
 
+### Screenshot
+[![](screenshot.png)]()
+
 ### Requirements
 - WHMCS 7.x or 8.x;
 - PHP 7 and the cURL extension;
