@@ -166,6 +166,23 @@ function novoserve_ClientArea(array $params)
         $serverTag = new AssetTag($params['username']);
         $serviceStatus = $params['status'];
 
+        // Some over-engineered code to get the actual current traffic period;
+        if ($params['model']->billingcycle != 'Free Account') {
+            $nextDueDateTime = new DateTime($params['model']->nextduedate);
+            $nextDueDateDay = $nextDueDateTime->format('d');
+            if (date('d') <= $nextDueDateDay) {
+                $getPeriodEnd = $nextDueDateDay.'-'.date('m-Y');
+                $getPeriodEndDateTime = new DateTime($getPeriodEnd);
+                $getPeriodEndDateTime->modify('-1 month');
+                $getPeriodStart = $getPeriodEndDateTime->format('d-m-Y');
+            } else {
+                $getPeriodEnd = $nextDueDateDay.'-'.(sprintf("%02d", date('m')+1)).'-'.date('Y');
+                $getPeriodEndDateTime = new DateTime($getPeriodEnd);
+                $getPeriodEndDateTime->modify('-1 month');
+                $getPeriodStart = $getPeriodEndDateTime->format('d-m-Y');
+            }
+        }
+
         // Stop if service is not active;
         if ($serviceStatus != 'Active') {
             throw new Exception('Service is not active.');
@@ -209,9 +226,18 @@ function novoserve_ClientArea(array $params)
             'whitelabel' => $whiteLabel
         ]);
         $getBandwidthGraph = $api->get('servers/'.$serverTag.'/bandwidth/graph', [
-            'from' => time()-259200, // 3 days
+            'from' => strtotime($getPeriodStart),
             'height' => 200
         ]);
+        $getTrafficUsage = $api->get('servers/'.$serverTag.'/bandwidth', [
+            'from' => strtotime($getPeriodStart)
+        ]);
+
+        // Prepare values before loading it into template vars;
+        $getTrafficUsage['results']['dateTimeFrom'] = date('d-m-Y', strtotime($getTrafficUsage['results']['dateTimeFrom']));
+        $getTrafficUsage['results']['dateTimeUntil'] = date('d-m-Y', strtotime($getTrafficUsage['results']['dateTimeUntil']));
+        $getTrafficUsage['results']['usage'] = round($getTrafficUsage['results']['usage'], 2);
+        $getTrafficUsage['results']['download'] = round($getTrafficUsage['results']['download'], 2);
 
         // Load and return template with variables;
         return array(
@@ -222,6 +248,7 @@ function novoserve_ClientArea(array $params)
                 'serverHostname' => $params['domain'],
                 'ipmiLink' => $getIpmiLink['results'],
                 'bandwidthGraph' => $getBandwidthGraph['results']['image'],
+                'trafficUsage' => $getTrafficUsage['results']
             ),
         );
 

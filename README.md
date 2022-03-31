@@ -10,7 +10,8 @@ Features:
 - Autologin IPMI for the admin side;
 - Whitelabel console URL generation;
 - Server power management;
-- Bandwidth usage graph.
+- Bandwidth usage graph;
+- Traffic usage for current period.
 
 ### Screenshot
 [![](screenshot.png)]()
@@ -23,7 +24,7 @@ Features:
 ### Installation
 
 1. Upload the contents of the ZIP into your WHMCS root directory.
-2. Setup a new or use an existing Product:
+2. Setup a new or use an existing Product as "Server/VPS":
 3. Under Module Settings, select the "NovoServe Module".
 4. Now enter your API credentials accordingly and decide if you want whitelabel consoles (without any logo), or the default NovoServe branded. If you want to use the whitelabel console then enter "yes" in the textbox. For resellers with the branded console can also use their ID here.
 5. Go to a service that uses this (newly) product and ensure that the Username contains a server tag (000-000). This is a requirement.
