@@ -33,6 +33,24 @@
         Bandwidth
     </div>
     <div class="card-body">
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <div class="input-group-text">Period</div>
+            </div>
+            <input type="text" class="form-control" value="{$trafficUsage.dateTimeFrom} - {$trafficUsage.dateTimeUntil}" readonly>
+        </div>
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <div class="input-group-text">Usage Outgoing</div>
+            </div>
+            <input type="text" class="form-control" value="{$trafficUsage.usage} TB" readonly>
+        </div>
+        <div class="input-group mb-3">
+            <div class="input-group-prepend">
+                <div class="input-group-text">Usage Incoming</div>
+            </div>
+            <input type="text" class="form-control" value="{$trafficUsage.download} TB" readonly>
+        </div>
         <img class="img-fluid" src="{$bandwidthGraph}">
     </div>
 </div>
