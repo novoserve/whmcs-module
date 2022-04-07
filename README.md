@@ -18,7 +18,7 @@ Features:
 
 ### Requirements
 - WHMCS 7.x or 8.x;
-- PHP 7 and the cURL extension;
+- PHP 7.4+ and the cURL extension;
 - NovoServe API credentials (you can generate them in the NovoServe portal, under API Management).
 
 ### Installation
