@@ -1,13 +1,13 @@
 <?php
 
-use NovoServe\API\Client;
-use NovoServe\Cloudrack\Types\AssetTag;
-
-if (!defined("WHMCS")) {
-    die("This file cannot be accessed directly");
+if (!defined('WHMCS')) {
+    die('This file cannot be accessed directly');
 }
 
 require_once __DIR__.'/vendor/autoload.php';
+
+use NovoServe\API\Client;
+use NovoServe\Cloudrack\Types\ServerTag;
 
 /**
  * Define module related meta data.
@@ -19,7 +19,7 @@ require_once __DIR__.'/vendor/autoload.php';
  *
  * @return array
  */
-function novoserve_MetaData()
+function novoserve_MetaData(): array
 {
     return array(
         'DisplayName' => 'NovoServe Module',
@@ -51,7 +51,7 @@ function novoserve_MetaData()
  *
  * @return array
  */
-function novoserve_ConfigOptions()
+function novoserve_ConfigOptions(): array
 {
     return array(
         'Key' => array(
@@ -91,7 +91,7 @@ function novoserve_ConfigOptions()
  *
  * @return array
  */
-function novoserve_AdminServicesTabFields(array $params)
+function novoserve_AdminServicesTabFields(array $params): array
 {
     try {
 
@@ -99,7 +99,7 @@ function novoserve_AdminServicesTabFields(array $params)
         $apiKey = $params['configoption1'];
         $apiSecret = $params['configoption2'];
         $whiteLabel = is_string($params['configoption3']) ? $params['configoption3'] : 'yes';
-        $serverTag = new AssetTag($params['username']);
+        $serverTag = new ServerTag($params['username']);
 
         // Create API object;
         $api = new Client($apiKey, $apiSecret);
@@ -155,7 +155,7 @@ function novoserve_AdminServicesTabFields(array $params)
  *
  * @return array
  */
-function novoserve_ClientArea(array $params)
+function novoserve_ClientArea(array $params): array
 {
     try {
 
@@ -163,7 +163,7 @@ function novoserve_ClientArea(array $params)
         $apiKey = $params['configoption1'];
         $apiSecret = $params['configoption2'];
         $whiteLabel = is_string($params['configoption3']) ? $params['configoption3'] : 'yes';
-        $serverTag = new AssetTag($params['username']);
+        $serverTag = new ServerTag($params['username']);
         $serviceStatus = $params['status'];
 
         // Some over-engineered code to get the actual current traffic period;

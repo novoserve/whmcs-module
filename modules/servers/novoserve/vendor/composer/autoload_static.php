@@ -6,14 +6,13 @@ namespace Composer\Autoload;
 
 class ComposerStaticInit8821d23679d5fa20f2ed1ca5d22a86e9
 {
+    public static $files = array (
+        '3a7aa32a415b57f08a4e7a5283c18064' => __DIR__ . '/..' . '/novoserve/cloudrack-type-assettag/AssetTag.php',
+    );
+
     public static $classMap = array (
-        'AssetTagTest' => __DIR__ . '/../..' . '/libs/cloudrack-type-assettag/tests/tests/AssetTagTest.php',
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
         'NovoServe\\API\\Client' => __DIR__ . '/../..' . '/libs/public-api-docs/libraries/php/Client.php',
-        'NovoServe\\Cloudrack\\Types\\AssetTag' => __DIR__ . '/../..' . '/libs/cloudrack-type-assettag/AssetTag.php',
-        'NovoServe\\Cloudrack\\Types\\InvalidAssetTagException' => __DIR__ . '/../..' . '/libs/cloudrack-type-assettag/AssetTag.php',
-        'NovoServe\\Cloudrack\\Types\\InvalidAssetTagLocationException' => __DIR__ . '/../..' . '/libs/cloudrack-type-assettag/AssetTag.php',
-        'NovoServe\\Cloudrack\\Types\\ServerTag' => __DIR__ . '/../..' . '/libs/cloudrack-type-assettag/AssetTag.php',
     );
 
     public static function getInitializer(ClassLoader $loader)
