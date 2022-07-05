@@ -11,10 +11,11 @@ class Client
 
     /**
      * Constructor that sets the apiKey and apiSecret using default apiUrl.
-     * @param $apiKey The API key from the customers' portal.
-     * @param $apiSecret The API secret from the customers' portal.
+     *
+     * @param string $apiKey    The API key from the customers' portal.
+     * @param string $apiSecret The API secret from the customers' portal.
      */
-    public function __construct($apiKey, $apiSecret)
+    public function __construct(string $apiKey, string $apiSecret)
     {
         $this->apiKey = trim($apiKey);
         $this->apiSecret = trim($apiSecret);
@@ -22,10 +23,12 @@ class Client
 
     /**
      * Sets and overrides the default apiUrl, useful during development.
-     * @param $apiUrl The URL of NovoServe's API.
-     * @return $this Returns Client object.
+     *
+     * @param string $apiUrl The URL of NovoServe's API.
+     *
+     * @return self Returns Client object.
      */
-    public function setApiUrl($apiUrl): Client
+    public function setApiUrl(string $apiUrl): self
     {
         $this->apiUrl = rtrim(trim($apiUrl), '/');
         return $this;
@@ -33,10 +36,12 @@ class Client
 
     /**
      * Whether to ignore potential certificate errors/issues, useful during development.
+     *
      * @param bool $ignoreCertificate Ignore or not to ignore.
-     * @return $this Returns Client object.
+     *
+     * @return self Returns Client object.
      */
-    public function ignoreCertificate(bool $ignoreCertificate): Client
+    public function ignoreCertificate(bool $ignoreCertificate): self
     {
         $this->ignoreCertificate = $ignoreCertificate;
         return $this;
@@ -44,10 +49,13 @@ class Client
 
     /**
      * Internal cURL function to execute the actual request.
-     * @param string $method The HTTP method to use.
+     *
+     * @param string $method   The HTTP method to use.
      * @param string $endpoint The target endpoint.
-     * @param array $body The body content which are the parameters.
+     * @param array  $body     The body content which are the parameters.
+     *
      * @return array Returns an array of data returned by the API.
+     * @throws \Exception
      */
     private function curl(string $method, string $endpoint, array $body = []): array
     {
@@ -87,9 +95,12 @@ class Client
 
     /**
      * Function that executes a GET request.
+     *
      * @param string $endpoint The target endpoint.
-     * @param array $body The body data to send.
+     * @param array  $body     The body data to send.
+     *
      * @return array Returns an array with data from the API.
+     * @throws \Exception
      */
     public function get(string $endpoint, array $body = []): array
     {
@@ -101,9 +112,12 @@ class Client
 
     /**
      * Function that executes a POST request.
+     *
      * @param string $endpoint The target endpoint.
-     * @param array $body The body data to send.
+     * @param array  $body     The body data to send.
+     *
      * @return array Returns an array with data from the API.
+     * @throws \Exception
      */
     public function post(string $endpoint, array $body = []): array
     {
@@ -112,9 +126,12 @@ class Client
 
     /**
      * Function that executes a PUT request.
+     *
      * @param string $endpoint The target endpoint.
-     * @param array $body The body data to send.
+     * @param array  $body     The body data to send.
+     *
      * @return array Returns an array with data from the API.
+     * @throws \Exception
      */
     public function put(string $endpoint, array $body = []): array
     {
@@ -123,9 +140,12 @@ class Client
 
     /**
      * Function that executes a PATCH request.
+     *
      * @param string $endpoint The target endpoint.
-     * @param array $body The body data to send.
+     * @param array  $body     The body data to send.
+     *
      * @return array Returns an array with data from the API.
+     * @throws \Exception
      */
     public function patch(string $endpoint, array $body = []): array
     {
@@ -134,9 +154,12 @@ class Client
 
     /**
      * Function that executes a DELETE request.
+     *
      * @param string $endpoint The target endpoint.
-     * @param array $body The body data to send.
+     * @param array  $body     The body data to send.
+     *
      * @return array Returns an array with data from the API.
+     * @throws \Exception
      */
     public function delete(string $endpoint, array $body = []): array
     {
