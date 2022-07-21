@@ -4,8 +4,50 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "18fec44bca4fb1a953b3cd488ad37540",
-    "packages": [],
+    "content-hash": "45851bc1de1f00814ce953a3ab24cb40",
+    "packages": [
+        {
+            "name": "novoserve/cloudrack-type-assettag",
+            "version": "1.0.2",
+            "source": {
+                "type": "git",
+                "url": "git@github.com:novoserve/cloudrack-type-assettag.git",
+                "reference": "fd5b54a237deabf8dbf21582712fb9a1f6a6622a"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/novoserve/cloudrack-type-assettag/zipball/fd5b54a237deabf8dbf21582712fb9a1f6a6622a",
+                "reference": "fd5b54a237deabf8dbf21582712fb9a1f6a6622a",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=7.3"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^9.5"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "AssetTag.php"
+                ]
+            },
+            "scripts": {
+                "test": [
+                    "phpunit --config tests/phpunit.xml"
+                ]
+            },
+            "license": [
+                "proprietary"
+            ],
+            "description": "Cloudrack Data Type for Asset Tags",
+            "support": {
+                "source": "https://github.com/novoserve/cloudrack-type-assettag/tree/1.0.2",
+                "issues": "https://github.com/novoserve/cloudrack-type-assettag/issues"
+            },
+            "time": "2022-04-07T13:11:36+00:00"
+        }
+    ],
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
@@ -13,10 +55,10 @@
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=7.4",
+        "php": "^7.4 || ^8.0",
         "ext-curl": "*",
         "ext-json": "*"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.1.0"
+    "plugin-api-version": "2.3.0"
 }
