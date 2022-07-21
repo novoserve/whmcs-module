@@ -3,7 +3,7 @@
         'name' => 'novoserve/whmcs-module',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '55e6bc572247726f20a6860d580ccb92bf7ad412',
+        'reference' => '7cec9d15eb93403ed1b45eb215b4d022653020cf',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -11,9 +11,9 @@
     ),
     'versions' => array(
         'novoserve/cloudrack-type-assettag' => array(
-            'pretty_version' => '1.0.2',
-            'version' => '1.0.2.0',
-            'reference' => 'fd5b54a237deabf8dbf21582712fb9a1f6a6622a',
+            'pretty_version' => '1.1.0',
+            'version' => '1.1.0.0',
+            'reference' => '8c3469ab826337c11a66fee578a33b3ba1b77785',
             'type' => 'library',
             'install_path' => __DIR__ . '/../novoserve/cloudrack-type-assettag',
             'aliases' => array(),
@@ -22,7 +22,7 @@
         'novoserve/whmcs-module' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '55e6bc572247726f20a6860d580ccb92bf7ad412',
+            'reference' => '7cec9d15eb93403ed1b45eb215b4d022653020cf',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

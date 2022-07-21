@@ -1,0 +1,21 @@
+{
+  "autoload": {
+    "files": ["AssetTag.php"]
+  },
+  "config": {
+    "sort-packages": true
+  },
+  "description": "Cloudrack Data Type for Asset Tags",
+  "license": "proprietary",
+  "name": "novoserve/cloudrack-type-assettag",
+  "require": {
+    "php": ">=7.3"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.5"
+  },
+  "scripts": {
+    "test": "phpunit --config tests/phpunit.xml"
+  },
+  "type": "library"
+}
