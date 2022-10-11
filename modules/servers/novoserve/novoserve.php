@@ -106,7 +106,7 @@ function novoserve_AdminServicesTabFields(array $params): array
 
         // Generate an IPMI link;
         $getIpmiLink = $api->post('servers/'.$serverTag.'/ipmi-link/', [
-            'remoteIp' => $_SERVER['REMOTE_ADDR'],
+            'remoteIp' => $_SERVER['HTTP_CLIENT_IP'] ?? ($_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR']),
             'whitelabel' => $whiteLabel
         ]);
 
@@ -222,7 +222,7 @@ function novoserve_ClientArea(array $params): array
 
         // Execute API requests;
         $getIpmiLink = $api->post('servers/'.$serverTag.'/ipmi-link/', [
-            'remoteIp' => $_SERVER['REMOTE_ADDR'],
+            'remoteIp' => $_SERVER['HTTP_CLIENT_IP'] ?? ($_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR']),
             'whitelabel' => $whiteLabel
         ]);
         $getBandwidthGraph = $api->get('servers/'.$serverTag.'/bandwidth/graph', [
