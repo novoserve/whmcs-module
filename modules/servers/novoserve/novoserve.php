@@ -170,10 +170,7 @@ function novoserve_ClientArea(array $params): array
         if ($params['model']->billingcycle != 'Free Account') {
             $nextDueDateTime = new DateTime($params['model']->nextinvoicedate);
             $nextDueDateDay = $nextDueDateTime->format('d');
-
-            if ($params['model']->billingcycle != 'Monthly') {
-                $nextDueDateTime = new DateTime(date('Y-m-') . $nextDueDateDay); // Create DateTime object, it will automatically bump the date if the day is not in this month;
-            }
+            $nextDueDateTime = new DateTime(date('Y-m-') . $nextDueDateDay); // Create DateTime object, it will automatically bump the date if the day is not in this month;
             $getPeriodEndDateTime = $nextDueDateTime;
 
             if (date('d') < $nextDueDateDay) {
