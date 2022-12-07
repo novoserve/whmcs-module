@@ -168,18 +168,20 @@ function novoserve_ClientArea(array $params): array
 
         // Some over-engineered code to get the actual current traffic period;
         if ($params['model']->billingcycle != 'Free Account') {
-            $nextDueDateTime = new DateTime($params['model']->nextduedate);
+            $nextDueDateTime = new DateTime($params['model']->nextinvoicedate);
             $nextDueDateDay = $nextDueDateTime->format('d');
-            if (date('d') <= $nextDueDateDay) {
-                $getPeriodEnd = $nextDueDateDay.'-'.date('m-Y');
-                $getPeriodEndDateTime = new DateTime($getPeriodEnd);
-                $getPeriodEndDateTime->modify('-1 month');
-                $getPeriodStart = $getPeriodEndDateTime->format('d-m-Y');
+
+            if ($params['model']->billingcycle != 'Monthly') {
+                $nextDueDateTime = new DateTime(date('Y-m-') . $nextDueDateDay); // Create DateTime object, it will automatically bump the date if the day is not in this month;
+            }
+            $getPeriodEndDateTime = $nextDueDateTime;
+
+            if (date('d') < $nextDueDateDay) {
+                $getPeriodEnd = $nextDueDateTime->format('d-m-Y');
+                $getPeriodStart = $getPeriodEndDateTime->modify('-1 month')->format('d-m-Y');
             } else {
-                $getPeriodEnd = $nextDueDateDay.'-'.(sprintf("%02d", date('m')+1)).'-'.date('Y');
-                $getPeriodEndDateTime = new DateTime($getPeriodEnd);
-                $getPeriodEndDateTime->modify('-1 month');
-                $getPeriodStart = $getPeriodEndDateTime->format('d-m-Y');
+                $getPeriodEnd = $nextDueDateTime->modify('+1 month')->format('d-m-Y');
+                $getPeriodStart = $getPeriodEndDateTime->modify('-1 month')->format('d-m-Y');
             }
         }
 
@@ -234,8 +236,8 @@ function novoserve_ClientArea(array $params): array
         ]);
 
         // Prepare values before loading it into template vars;
-        $getTrafficUsage['results']['dateTimeFrom'] = date('d-m-Y', strtotime($getTrafficUsage['results']['dateTimeFrom']));
-        $getTrafficUsage['results']['dateTimeUntil'] = date('d-m-Y', strtotime($getTrafficUsage['results']['dateTimeUntil']));
+        $getTrafficUsage['results']['dateTimeFrom'] = date('d-m-Y', strtotime($getPeriodStart));
+        $getTrafficUsage['results']['dateTimeUntil'] = date('d-m-Y', strtotime($getPeriodEnd));
         $getTrafficUsage['results']['usage'] = round($getTrafficUsage['results']['usage'], 2);
         $getTrafficUsage['results']['download'] = round($getTrafficUsage['results']['download'], 2);
 
