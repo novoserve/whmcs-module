@@ -31,6 +31,7 @@ class Client
     public function setApiUrl(string $apiUrl): self
     {
         $this->apiUrl = rtrim(trim($apiUrl), '/');
+
         return $this;
     }
 
@@ -44,7 +45,26 @@ class Client
     public function ignoreCertificate(bool $ignoreCertificate): self
     {
         $this->ignoreCertificate = $ignoreCertificate;
+
         return $this;
+    }
+
+    /**
+     * Function that executes a GET request.
+     *
+     * @param string $endpoint The target endpoint.
+     * @param array  $body     The body data to send.
+     *
+     * @return array Returns an array with data from the API.
+     * @throws \Exception
+     */
+    public function get(string $endpoint, array $body = []): array
+    {
+        if (count($body)) {
+            $endpoint .= '?' . http_build_query($body);
+        }
+
+        return $this->curl('GET', $endpoint);
     }
 
     /**
@@ -60,17 +80,17 @@ class Client
     private function curl(string $method, string $endpoint, array $body = []): array
     {
         $curl = curl_init();
-        curl_setopt_array($curl, array(
+        curl_setopt_array($curl, [
             CURLOPT_URL => $this->apiUrl . '/' . ltrim($endpoint, '/'),
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_MAXREDIRS => 10,
             CURLOPT_TIMEOUT => 10,
             CURLOPT_FOLLOWLOCATION => true,
             CURLOPT_USERPWD => $this->apiKey . ':' . $this->apiSecret,
-            CURLOPT_HTTPHEADER => array(
+            CURLOPT_HTTPHEADER => [
                 'Content-Type: application/json'
-            ),
-        ));
+            ],
+        ]);
 
         if ($method != 'GET') {
             curl_setopt($curl, CURLOPT_CUSTOMREQUEST, $method);
@@ -90,24 +110,8 @@ class Client
             throw new \Exception($responseError);
         }
         curl_close($curl);
-        return $responseArray;
-    }
 
-    /**
-     * Function that executes a GET request.
-     *
-     * @param string $endpoint The target endpoint.
-     * @param array  $body     The body data to send.
-     *
-     * @return array Returns an array with data from the API.
-     * @throws \Exception
-     */
-    public function get(string $endpoint, array $body = []): array
-    {
-        if (count($body)) {
-            $endpoint .= '?' . http_build_query($body);
-        }
-        return $this->curl('GET', $endpoint);
+        return $responseArray;
     }
 
     /**
@@ -165,5 +169,4 @@ class Client
     {
         return $this->curl('DELETE', $endpoint, $body);
     }
-
 }
