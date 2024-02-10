@@ -1,33 +1,33 @@
 {
-    "name": "novoserve/whmcs-module",
-    "description": "NovoServe WHMCS Module",
-    "license": "MIT",
-    "type": "project",
-    "authors": [
-        {
-            "name": "Novoserve B.V.",
-            "email": "info@novoserve.com"
-        }
-    ],
-    "autoload": {
-        "classmap": [
-            "libs"
-        ]
-    },
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "git@github.com:novoserve/cloudrack-type-assettag.git"
-        }
-    ],
-    "require": {
-        "novoserve/cloudrack-type-assettag": "^1.0",
-        "php": "^7.4 || ^8.0",
-        "ext-curl": "*",
-        "ext-json": "*"
-    },
-    "config": {
-        "preferred-dist": "true",
-        "sort-packages": true
+  "name": "novoserve/whmcs-module",
+  "description": "NovoServe WHMCS Module",
+  "license": "MIT",
+  "type": "project",
+  "authors": [
+    {
+      "name": "Novoserve B.V.",
+      "email": "info@novoserve.com"
     }
+  ],
+  "autoload": {
+    "classmap": [
+      "libs"
+    ]
+  },
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "git@github.com:novoserve/cloudrack-type-assettag.git"
+    }
+  ],
+  "require": {
+    "novoserve/cloudrack-type-assettag": "^1.0",
+    "php": "^7.4 || ^8.0",
+    "ext-curl": "*",
+    "ext-json": "*"
+  },
+  "config": {
+    "preferred-dist": "true",
+    "sort-packages": true
+  }
 }
