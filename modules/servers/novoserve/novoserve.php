@@ -94,7 +94,7 @@ function novoserve_AdminServicesTabFields(array $params): array
         $api = new Client($apiKey, $apiSecret);
 
         // Generate an IPMI link;
-        $getIpmiLink = $api->post('servers/' . $serverTag . '/ipmi-link/', [
+        $getIpmiLink = $api->post('servers/' . $serverTag . '/ipmi-link', [
             'remoteIp' => $_SERVER['HTTP_CLIENT_IP'] ?? ($_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR']),
             'whitelabel' => $whiteLabel
         ]);
