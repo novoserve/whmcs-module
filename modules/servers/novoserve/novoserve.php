@@ -84,7 +84,6 @@ function novoserve_ConfigOptions(): array
 function novoserve_AdminServicesTabFields(array $params): array
 {
     try {
-
         // Get all service details;
         $apiKey = $params['configoption1'];
         $apiSecret = $params['configoption2'];
@@ -141,13 +140,17 @@ function novoserve_AdminServicesTabFields(array $params): array
 function novoserve_ClientArea(array $params): array
 {
     try {
+        // Stop if service is not active;
+        $serviceStatus = $params['status'];
+        if ($serviceStatus !== 'Active') {
+            throw new Exception('Service is not active.');
+        }
 
         // Get all service details;
         $apiKey = $params['configoption1'];
         $apiSecret = $params['configoption2'];
         $whiteLabel = is_string($params['configoption3']) ? $params['configoption3'] : 'yes';
         $serverTag = new ServerTag($params['username']);
-        $serviceStatus = $params['status'];
 
         $getPeriodStart = '';
         $getPeriodEnd = '';
@@ -164,11 +167,6 @@ function novoserve_ClientArea(array $params): array
             } else {
                 $getPeriodEnd = $nextDueDateTime->modify('+1 month')->format('d-m-Y');
             }
-        }
-
-        // Stop if service is not active;
-        if ($serviceStatus !== 'Active') {
-            throw new Exception('Service is not active.');
         }
 
         // Create API object;
