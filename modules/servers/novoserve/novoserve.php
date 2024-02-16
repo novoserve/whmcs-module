@@ -8,6 +8,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 use NovoServe\API\Client;
 use NovoServe\Cloudrack\Types\ServerTag;
+use NovoServe\Whmcs\ResellerModule\ClientIpHelper;
 
 /**
  * Define module related meta data.
@@ -95,8 +96,8 @@ function novoserve_AdminServicesTabFields(array $params): array
 
         // Generate an IPMI link;
         $getIpmiLink = $api->post('servers/' . $serverTag . '/ipmi-link', [
-            'remoteIp' => $_SERVER['HTTP_CLIENT_IP'] ?? ($_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR']),
-            'whitelabel' => $whiteLabel
+            'remoteIp' => ClientIpHelper::getClientIpAddress(),
+            'whitelabel' => $whiteLabel,
         ]);
 
         return ['NovoServe Module' => '<a href="' . $getIpmiLink['results'] . '" target="_blank" class="btn btn-primary">IPMI</a>'];
@@ -203,10 +204,23 @@ function novoserve_ClientArea(array $params): array
         }
 
         // Execute API requests;
-        $getIpmiLink = $api->post('servers/' . $serverTag . '/ipmi-link', [
-            'remoteIp' => $_SERVER['HTTP_CLIENT_IP'] ?? ($_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['REMOTE_ADDR']),
-            'whitelabel' => $whiteLabel
-        ]);
+        try {
+            $getIpmiLink = $api->post('servers/' . $serverTag . '/ipmi-link', [
+                'remoteIp' => ClientIpHelper::getClientIpAddress(),
+                'whitelabel' => $whiteLabel,
+            ]);
+        } catch (Exception $e) {
+            // Could not retrieve IPMI link/client IP, do not crash the entire page
+            logModuleCall(
+                'novoserve',
+                __FUNCTION__,
+                $params,
+                $e->getMessage(),
+                $e->getTraceAsString(),
+            );
+            $getIpmiLink = '';
+        }
+
         $getBandwidthGraph = $api->get('servers/' . $serverTag . '/bandwidth/graph', [
             'from' => strtotime($getPeriodStart),
             'height' => 200

@@ -8,4 +8,5 @@ $baseDir = dirname($vendorDir);
 return array(
     'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
     'NovoServe\\API\\Client' => $baseDir . '/libs/public-api-docs/libraries/php/Client.php',
+    'NovoServe\\Whmcs\\ResellerModule\\ClientIpHelper' => $baseDir . '/libs/ClientIpHelper.php',
 );
