@@ -1,31 +1,31 @@
 {
-    "schema": "1.0",
-    "type": "whmcs-servers",
+  "schema": "1.0",
+  "type": "whmcs-servers",
+  "name": "NovoServe Module",
+  "license": "MIT",
+  "category": "provisioning",
+  "description": {
     "name": "NovoServe Module",
-    "license": "MIT",
-    "category": "provisioning",
-    "description": {
-        "name": "NovoServe Module",
-        "tagline": "Allows your customers to manage their NovoServe server.",
-        "long": "Allows your customers to manage their NovoServe server.",
-        "features": [
-            "Allows your customers to manage their NovoServe server."
-        ]
-    },
-    "logo": {
-        "filename": "logo.png"
-    },
-    "support": {
-        "homepage": "https:\/\/www.novoserve.com\/",
-        "learn_more": "https:\/\/www.novoserve.com\/",
-        "email": "support@novoserve.com",
-        "support_url": "https:\/\/portal.novoserve.com\/",
-        "docs_url": "https:\/\/github.com\/novoserve\/whmcs-module"
-    },
-    "authors": [
-        {
-            "name": "NovoServe B.V.",
-            "homepage": "https:\/\/www.novoserve.com\/"
-        }
+    "tagline": "Allows your customers to manage their NovoServe server.",
+    "long": "Allows your customers to manage their NovoServe server.",
+    "features": [
+      "Allows your customers to manage their NovoServe server."
     ]
+  },
+  "logo": {
+    "filename": "logo.png"
+  },
+  "support": {
+    "homepage": "https:\/\/www.novoserve.com\/",
+    "learn_more": "https:\/\/www.novoserve.com\/",
+    "email": "support@novoserve.com",
+    "support_url": "https:\/\/novoserve.com\/entity-selector?redirect=contact-support",
+    "docs_url": "https:\/\/github.com\/novoserve\/whmcs-module"
+  },
+  "authors": [
+    {
+      "name": "NovoServe B.V.",
+      "homepage": "https:\/\/www.novoserve.com\/"
+    }
+  ]
 }
