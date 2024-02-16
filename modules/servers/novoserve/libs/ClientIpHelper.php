@@ -91,7 +91,8 @@ class ClientIpHelper
                 continue;
             }
 
-            $header = ucwords(str_replace(['_', ' '], '-', strtolower($header)));
+            $header = str_replace('HTTP_', '', $header);
+            $header = ucwords(str_replace(['_', ' '], '-', strtolower($header)), '-');
             $headers[$header] = $value;
         }
 
