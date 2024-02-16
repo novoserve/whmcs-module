@@ -2,6 +2,9 @@
 
 namespace NovoServe\Whmcs\ResellerModule;
 
+/**
+ * @link https://github.com/akrabat/ip-address-middleware Original source of the below code, modified for our situation.
+ */
 class ClientIpHelper
 {
     private const HEADERS_TO_INSPECT = [
