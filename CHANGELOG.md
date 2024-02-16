@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [1.1.5] - 2024-02-16
+### Changed
+- Fixed support for WHMCS behind a proxy, fetch IP from proxy headers. (#16)
+
 ## [1.1.4] - 2024-02-10
 ### Changed
 - Fixed trailing slash issue for ipmi-link api calls
