@@ -1,21 +1,32 @@
 {
-  "autoload": {
-    "files": ["AssetTag.php"]
-  },
-  "config": {
-    "sort-packages": true
-  },
-  "description": "Cloudrack Data Type for Asset Tags",
-  "license": "proprietary",
-  "name": "novoserve/cloudrack-type-assettag",
-  "require": {
-    "php": ">=7.3"
-  },
-  "require-dev": {
-    "phpunit/phpunit": "^9.5"
-  },
-  "scripts": {
-    "test": "phpunit --config tests/phpunit.xml"
-  },
-  "type": "library"
+	"name": "novoserve/cloudrack-type-assettag",
+	"description": "Cloudrack Data Type for Asset Tags",
+	"type": "library",
+	"license": "proprietary",
+	"autoload": {
+		"psr-4": {
+			"NovoServe\\Cloudrack\\Types\\": "src/"
+		}
+	},
+	"autoload-dev": {
+		"psr-4": {
+			"NovoServe\\Cloudrack\\Types\\Tests\\": "tests/"
+		}
+	},
+	"require": {
+		"php": ">=7.3"
+	},
+	"require-dev": {
+		"phpunit/phpunit": "^9.5"
+	},
+	"scripts": {
+		"test:unit": "phpunit --verbose",
+		"test:coverage": [
+			"@putenv XDEBUG_MODE=coverage",
+			"phpunit --configuration phpunit.dist.xml"
+		]
+	},
+	"config": {
+		"sort-packages": true
+	}
 }

@@ -94,6 +94,14 @@ Or with composer itself:
 composer test
 ```
 
+### Exceptions
+As of this commit, we are using a PSR-4 namespace. For migration purposes there are two AssetTagException
+
+### PHP Version
+Currently we support 7.3+, this is mainly because WHMCS (portal) is running PHP 7.4 because of dependencies on WHMCS.
+Also because this package is included in the WHMCS Reseller module, which means end users could have outdated PHP versions.
+We want to support as many systems as possible with this package.
+
 ## License
 
 All rights reserved (c) 2022 NovoServe B.V.
