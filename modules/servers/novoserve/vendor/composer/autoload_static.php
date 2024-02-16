@@ -13,6 +13,7 @@ class ComposerStaticInit8821d23679d5fa20f2ed1ca5d22a86e9
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
         'NovoServe\\API\\Client' => __DIR__ . '/../..' . '/libs/public-api-docs/libraries/php/Client.php',
+        'NovoServe\\Whmcs\\ResellerModule\\ClientIpHelper' => __DIR__ . '/../..' . '/libs/ClientIpHelper.php',
     );
 
     public static function getInitializer(ClassLoader $loader)
