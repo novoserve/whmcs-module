@@ -94,12 +94,12 @@ function novoserve_AdminServicesTabFields(array $params): array
         $api = new Client($apiKey, $apiSecret);
 
         // Generate an IPMI link;
-        $getIpmiLink = $api->post('servers/' . $serverTag . '/ipmi-link', [
+        $ipmiLink = $api->post('servers/' . $serverTag . '/ipmi-link', [
             'remoteIp' => ClientIpHelper::getClientIpAddress(),
             'whitelabel' => $whiteLabel,
-        ]);
+        ])['results'] ?? '';
 
-        return ['NovoServe Module' => '<a href="' . $getIpmiLink['results'] . '" target="_blank" class="btn btn-primary">IPMI</a>'];
+        return ['NovoServe Module' => '<a href="' . $ipmiLink . '" target="_blank" class="btn btn-primary">IPMI</a>'];
 
     } catch (Exception $e) {
         logModuleCall(
@@ -203,10 +203,10 @@ function novoserve_ClientArea(array $params): array
 
         // Execute API requests;
         try {
-            $getIpmiLink = $api->post('servers/' . $serverTag . '/ipmi-link', [
+            $ipmiLink = $api->post('servers/' . $serverTag . '/ipmi-link', [
                 'remoteIp' => ClientIpHelper::getClientIpAddress(),
                 'whitelabel' => $whiteLabel,
-            ]);
+            ])['results'] ?? '';
         } catch (Exception $e) {
             // Could not retrieve IPMI link/client IP, do not crash the entire page
             logModuleCall(
@@ -216,7 +216,7 @@ function novoserve_ClientArea(array $params): array
                 $e->getMessage(),
                 $e->getTraceAsString(),
             );
-            $getIpmiLink = '';
+            $ipmiLink = '';
         }
 
         $getBandwidthGraph = $api->get('servers/' . $serverTag . '/bandwidth/graph', [
@@ -240,7 +240,7 @@ function novoserve_ClientArea(array $params): array
                 'success' => $success ?? false,
                 'serverTag' => $serverTag,
                 'serverHostname' => $params['domain'],
-                'ipmiLink' => $getIpmiLink['results'],
+                'ipmiLink' => $ipmiLink,
                 'bandwidthGraph' => $getBandwidthGraph['results']['image'],
                 'trafficUsage' => $getTrafficUsage['results']
             ],
