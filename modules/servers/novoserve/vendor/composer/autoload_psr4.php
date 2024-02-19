@@ -6,4 +6,5 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
+    'NovoServe\\Cloudrack\\Types\\' => array($vendorDir . '/novoserve/cloudrack-type-assettag/src'),
 );

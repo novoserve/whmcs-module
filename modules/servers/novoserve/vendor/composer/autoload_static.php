@@ -6,19 +6,39 @@ namespace Composer\Autoload;
 
 class ComposerStaticInit8821d23679d5fa20f2ed1ca5d22a86e9
 {
-    public static $files = array (
-        '3a7aa32a415b57f08a4e7a5283c18064' => __DIR__ . '/..' . '/novoserve/cloudrack-type-assettag/AssetTag.php',
+    public static $prefixLengthsPsr4 = array (
+        'N' => 
+        array (
+            'NovoServe\\Cloudrack\\Types\\' => 26,
+        ),
+    );
+
+    public static $prefixDirsPsr4 = array (
+        'NovoServe\\Cloudrack\\Types\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/novoserve/cloudrack-type-assettag/src',
+        ),
     );
 
     public static $classMap = array (
         'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
         'NovoServe\\API\\Client' => __DIR__ . '/../..' . '/libs/public-api-docs/libraries/php/Client.php',
+        'NovoServe\\Cloudrack\\Types\\AssetTag' => __DIR__ . '/..' . '/novoserve/cloudrack-type-assettag/src/AssetTag.php',
+        'NovoServe\\Cloudrack\\Types\\AssetTagException' => __DIR__ . '/..' . '/novoserve/cloudrack-type-assettag/src/AssetTagException.php',
+        'NovoServe\\Cloudrack\\Types\\Exception\\AssetTagException' => __DIR__ . '/..' . '/novoserve/cloudrack-type-assettag/src/Exception/AssetTagException.php',
+        'NovoServe\\Cloudrack\\Types\\Exception\\InvalidAssetTagException' => __DIR__ . '/..' . '/novoserve/cloudrack-type-assettag/src/Exception/InvalidAssetTagException.php',
+        'NovoServe\\Cloudrack\\Types\\Exception\\InvalidAssetTagLocationException' => __DIR__ . '/..' . '/novoserve/cloudrack-type-assettag/src/Exception/InvalidAssetTagLocationException.php',
+        'NovoServe\\Cloudrack\\Types\\InvalidAssetTagException' => __DIR__ . '/..' . '/novoserve/cloudrack-type-assettag/src/InvalidAssetTagException.php',
+        'NovoServe\\Cloudrack\\Types\\InvalidAssetTagLocationException' => __DIR__ . '/..' . '/novoserve/cloudrack-type-assettag/src/InvalidAssetTagLocationException.php',
+        'NovoServe\\Cloudrack\\Types\\ServerTag' => __DIR__ . '/..' . '/novoserve/cloudrack-type-assettag/src/ServerTag.php',
         'NovoServe\\Whmcs\\ResellerModule\\ClientIpHelper' => __DIR__ . '/../..' . '/libs/ClientIpHelper.php',
     );
 
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
+            $loader->prefixLengthsPsr4 = ComposerStaticInit8821d23679d5fa20f2ed1ca5d22a86e9::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit8821d23679d5fa20f2ed1ca5d22a86e9::$prefixDirsPsr4;
             $loader->classMap = ComposerStaticInit8821d23679d5fa20f2ed1ca5d22a86e9::$classMap;
 
         }, null, ClassLoader::class);

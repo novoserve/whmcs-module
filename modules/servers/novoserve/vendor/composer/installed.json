@@ -2,17 +2,17 @@
     "packages": [
         {
             "name": "novoserve/cloudrack-type-assettag",
-            "version": "1.1.0",
-            "version_normalized": "1.1.0.0",
+            "version": "1.2.1",
+            "version_normalized": "1.2.1.0",
             "source": {
                 "type": "git",
                 "url": "git@github.com:novoserve/cloudrack-type-assettag.git",
-                "reference": "8c3469ab826337c11a66fee578a33b3ba1b77785"
+                "reference": "a92a483a786714e67f1959a271171573071cab37"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/novoserve/cloudrack-type-assettag/zipball/8c3469ab826337c11a66fee578a33b3ba1b77785",
-                "reference": "8c3469ab826337c11a66fee578a33b3ba1b77785",
+                "url": "https://api.github.com/repos/novoserve/cloudrack-type-assettag/zipball/a92a483a786714e67f1959a271171573071cab37",
+                "reference": "a92a483a786714e67f1959a271171573071cab37",
                 "shasum": ""
             },
             "require": {
@@ -21,17 +21,26 @@
             "require-dev": {
                 "phpunit/phpunit": "^9.5"
             },
-            "time": "2022-07-20T09:37:58+00:00",
+            "time": "2023-02-09T21:16:06+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
-                "files": [
-                    "AssetTag.php"
-                ]
+                "psr-4": {
+                    "NovoServe\\Cloudrack\\Types\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "NovoServe\\Cloudrack\\Types\\Tests\\": "tests/"
+                }
             },
             "scripts": {
-                "test": [
-                    "phpunit --config tests/phpunit.xml"
+                "test:unit": [
+                    "phpunit --verbose"
+                ],
+                "test:coverage": [
+                    "@putenv XDEBUG_MODE=coverage",
+                    "phpunit --configuration phpunit.dist.xml"
                 ]
             },
             "license": [
@@ -39,8 +48,7 @@
             ],
             "description": "Cloudrack Data Type for Asset Tags",
             "support": {
-                "source": "https://github.com/novoserve/cloudrack-type-assettag/tree/1.1.0",
-                "issues": "https://github.com/novoserve/cloudrack-type-assettag/issues"
+                "source": "https://github.com/novoserve/cloudrack-type-assettag/tree/1.2.1"
             },
             "install-path": "../novoserve/cloudrack-type-assettag"
         }

@@ -1,6 +1,8 @@
 <?php
-
 namespace NovoServe\Cloudrack\Types;
+
+use NovoServe\Cloudrack\Types\Exception\InvalidAssetTagException;
+use NovoServe\Cloudrack\Types\Exception\InvalidAssetTagLocationException;
 
 class AssetTag
 {
@@ -76,7 +78,7 @@ class AssetTag
 
         return $tag;
     }
-        
+
     /**
      * Matches a given value against the current Tag object
      *
@@ -115,6 +117,10 @@ class AssetTag
     {
         $matches = [];
 
+		if (empty($tag)) {
+			return $matches;
+		}
+
         try {
             preg_match(self::$regex, $tag, $matches);
         } catch (\Throwable $exception) {
@@ -122,20 +128,4 @@ class AssetTag
 
         return $matches;
     }
-}
-
-class ServerTag extends AssetTag
-{
-}
-
-abstract class AssetTagException extends \Exception
-{
-}
-
-class InvalidAssetTagException extends AssetTagException
-{
-}
-
-class InvalidAssetTagLocationException extends AssetTagException
-{
 }
