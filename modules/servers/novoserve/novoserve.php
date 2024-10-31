@@ -98,10 +98,12 @@ function novoserve_AdminServicesTabFields(array $params): array
         } else {
             $ipmiLinkButton = '<span class="btn btn-primary">IPMI unavailable</span>';
         }
-
+        $powerStatus = getPowerStatus($api, $serverTag);
         return [
             'NovoServe Module' => <<<"EOS"
             $ipmiLinkButton
+            |
+            Power status: $powerStatus
             <button type="button" class="btn btn-success" onclick="return confirm('Are you sure you want to proceed?') && runModuleCommand('custom','poweron')" name="poweron">Power On</button>
             <button type="button" class="btn btn-danger" onclick="return confirm('Are you sure you want to proceed?') && runModuleCommand('custom','reset')" name="reset">Reset</button>
             <button type="button" class="btn btn-danger" onclick="return confirm('Are you sure you want to proceed?') && runModuleCommand('custom','poweroff')" name="poweroff">Power Off</button>
@@ -139,14 +141,17 @@ function novoserve_poweron(array $params): string
 {
     return doPowerAction(getApiClientFromParams($params), getServerTagFromParams($params), 'poweron');
 }
+
 function novoserve_reset(array $params): string
 {
     return doPowerAction(getApiClientFromParams($params), getServerTagFromParams($params), 'reset');
 }
+
 function novoserve_poweroff(array $params): string
 {
     return doPowerAction(getApiClientFromParams($params), getServerTagFromParams($params), 'poweroff');
 }
+
 function novoserve_coldboot(array $params): string
 {
     return doPowerAction(getApiClientFromParams($params), getServerTagFromParams($params), 'coldboot');
@@ -247,6 +252,7 @@ function novoserve_ClientArea(array $params): array
                 'success' => $success ?? false,
                 'serverTag' => $serverTag,
                 'serverHostname' => $params['domain'],
+                'powerStatus' => getPowerStatus($api, $serverTag),
                 'ipmiLink' => $ipmiLink,
                 'bandwidthGraph' => $getBandwidthGraph['results']['image'],
                 'trafficUsage' => $getTrafficUsage['results']
@@ -274,6 +280,11 @@ function novoserve_ClientArea(array $params): array
  * Functions to talk to the NovoServe public API
  */
 
+function getServerTagFromParams(array $params): ServerTag
+{
+    return new ServerTag($params['username']);
+}
+
 function getApiClientFromParams(array $params): Client
 {
     $apiKey = $params['configoption1'];
@@ -281,9 +292,46 @@ function getApiClientFromParams(array $params): Client
     return new Client($apiKey, $apiSecret);
 }
 
-function getServerTagFromParams(array $params): ServerTag
+function getPowerStatus(Client $api, ServerTag $serverTag): string
 {
-    return new ServerTag($params['username']);
+    $link = 'servers/' . $serverTag . '/power';
+    try {
+        return $api->get($link)['results'] ?? '';
+    } catch (Exception $e) {
+        logModuleCall(
+            'novoserve',
+            __FUNCTION__,
+            ['link' => $link],
+            $e->getMessage(),
+            $e->getTraceAsString()
+        );
+
+        return '';
+    }
+
+}
+
+function getIpmiLink(Client $api, ServerTag $serverTag, string $whiteLabel): string
+{
+    $link = 'servers/' . $serverTag . '/ipmi-link';
+    try {
+        // Generate an IPMI link;
+        return $api->post($link, [
+            'remoteIp' => ClientIpHelper::getClientIpAddress(),
+            'whitelabel' => $whiteLabel,
+        ])['results'] ?? '';
+
+    } catch (Exception $e) {
+        logModuleCall(
+            'novoserve',
+            __FUNCTION__,
+            ['link' => $link],
+            $e->getMessage(),
+            $e->getTraceAsString()
+        );
+
+        return '';
+    }
 }
 
 function doPowerAction(Client $api, ServerTag $serverTag, string $action): string
@@ -311,28 +359,5 @@ function doPowerAction(Client $api, ServerTag $serverTag, string $action): strin
             $e->getTraceAsString()
         );
         return 'Could not perform power action on server. ' . $e->getMessage();
-    }
-}
-
-function getIpmiLink(Client $api, ServerTag $serverTag, string $whiteLabel): string
-{
-    $link = 'servers/' . $serverTag . '/ipmi-link';
-    try {
-        // Generate an IPMI link;
-        return $api->post($link, [
-            'remoteIp' => ClientIpHelper::getClientIpAddress(),
-            'whitelabel' => $whiteLabel,
-        ])['results'] ?? '';
-
-    } catch (Exception $e) {
-        logModuleCall(
-            'novoserve',
-            __FUNCTION__,
-            ['link' => $link],
-            $e->getMessage(),
-            $e->getTraceAsString()
-        );
-
-        return '';
     }
 }

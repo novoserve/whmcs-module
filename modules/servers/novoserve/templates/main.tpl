@@ -57,7 +57,7 @@
 
 <div class="card text-left">
     <div class="card-header">
-        Power Management
+        Power Management (server is currently '{$powerStatus}')
     </div>
     <div class="card-body">
         <form method="POST">
