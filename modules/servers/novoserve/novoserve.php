@@ -102,12 +102,14 @@ function novoserve_AdminServicesTabFields(array $params): array
         return [
             'NovoServe Module' => <<<"EOS"
             $ipmiLinkButton
-            |
-            Power status: $powerStatus
             <button type="button" class="btn btn-success" onclick="return confirm('Are you sure you want to proceed?') && runModuleCommand('custom','poweron')" name="poweron">Power On</button>
             <button type="button" class="btn btn-danger" onclick="return confirm('Are you sure you want to proceed?') && runModuleCommand('custom','reset')" name="reset">Reset</button>
             <button type="button" class="btn btn-danger" onclick="return confirm('Are you sure you want to proceed?') && runModuleCommand('custom','poweroff')" name="poweroff">Power Off</button>
             <button type="button" class="btn btn-danger" onclick="return confirm('Are you sure you want to proceed?') && runModuleCommand('custom','coldboot')" name="coldboot">Cold Boot</button>
+            <span id="modpowerstatus">Power status: $powerStatus</span>
+            <script>
+            jQuery('#modcmdworking').appendTo('#modpowerstatus');
+            </script>
 EOS
         ];
     } catch (Exception $e) {
@@ -127,15 +129,17 @@ EOS
  * Add buttons to the admin side to manage power functions as well
  * this is the official way, but we want the buttons to be together with the ipmi link, have the colours and have the warning.
  */
-//function novoserve_AdminCustomButtonArray(): array
-//{
-//    return [
-//        'Power On' => 'poweron',
-//        'Reset' => 'reset',
-//        'Power Off' => 'poweroff',
-//        'Cold Boot' => 'coldboot',
-//    ];
-//}
+/*
+function novoserve_AdminCustomButtonArray(): array
+{
+    return [
+        'Power On' => 'poweron',
+        'Reset' => 'reset',
+        'Power Off' => 'poweroff',
+        'Cold Boot' => 'coldboot',
+    ];
+}
+*/
 
 function novoserve_poweron(array $params): string
 {
