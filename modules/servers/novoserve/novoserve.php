@@ -99,16 +99,56 @@ function novoserve_AdminServicesTabFields(array $params): array
             $ipmiLinkButton = '<span class="btn btn-primary">IPMI unavailable</span>';
         }
         $powerStatus = getPowerStatus($api, $serverTag);
+
         return [
             'NovoServe Module' => <<<"EOS"
             $ipmiLinkButton
-            <button type="button" class="btn btn-success" onclick="return confirm('Are you sure you want to proceed?') && runModuleCommand('custom','poweron')" name="poweron">Power On</button>
-            <button type="button" class="btn btn-danger" onclick="return confirm('Are you sure you want to proceed?') && runModuleCommand('custom','reset')" name="reset">Reset</button>
-            <button type="button" class="btn btn-danger" onclick="return confirm('Are you sure you want to proceed?') && runModuleCommand('custom','poweroff')" name="poweroff">Power Off</button>
-            <button type="button" class="btn btn-danger" onclick="return confirm('Are you sure you want to proceed?') && runModuleCommand('custom','coldboot')" name="coldboot">Cold Boot</button>
+            <button type="button" class="btn btn-success" onclick="return confirm('Are you sure you want to proceed?') && runNovoModuleCommand('poweron')" name="poweron">Power On</button>
+            <button type="button" class="btn btn-danger" onclick="return confirm('Are you sure you want to proceed?') && runNovoModuleCommand('reset')" name="reset">Reset</button>
+            <button type="button" class="btn btn-danger" onclick="return confirm('Are you sure you want to proceed?') && runNovoModuleCommand('poweroff')" name="poweroff">Power Off</button>
+            <button type="button" class="btn btn-danger" onclick="return confirm('Are you sure you want to proceed?') && runNovoModuleCommand('coldboot')" name="coldboot">Cold Boot</button>
             <span id="modpowerstatus">Power status: $powerStatus</span>
+            <span id="novoworking" style="display:none;text-align:center;">
+                <img src="images/loader.gif"> &nbsp; Working...
+            </span>
             <script>
-            jQuery('#modcmdworking').appendTo('#modpowerstatus');
+                // hide the empty Module Commands row
+                jQuery('#modcmdbtns').parent().parent().hide();
+
+                function runNovoModuleCommand(cmd) {
+                    $('#growls').fadeOut('fast').remove();
+                    $('.successbox,.errorbox').slideUp('fast').remove();
+                    // Hide the modal that was activated.
+                    jQuery("[id^=modalModule]").modal("hide");
+                    jQuery('#novoworking').show();
+
+                    var reqstr = "userid=6&id=330&modop=custom&ajax=1&ac=" + cmd + "&token=" + csrfToken;
+                    WHMCS.http.jqClient.post("clientsservices.php", reqstr, function(data) {
+                        if (data.success && data.redirect) {
+                            data = data.redirect;
+                        }
+                        if (data.body) {
+                            data = data.body;
+                        }
+
+                        if (data.substr(0,9)=="redirect|") {
+                            window.location = data.substr(9);
+                        } else if (data.substr(0,7)=="window|") {
+                            window.open(data.substr(7), '_blank');
+                        } else {
+                            $("#servicecontent").html(data);
+                            $('html, body').animate({
+                                scrollTop: $('.client-tabs').offset().top - 10
+                            }, 500);
+                        }
+                    }).fail(function (xhr) {
+                        var response = (xhr.responseText != '' ? xhr.responseText : xhr.statusText);
+                        console.error('[WHMCS] Error: ' + response);
+                    }).always(function () {
+                        jQuery('#novoworking').hide();
+                    });
+                }
+
             </script>
 EOS
         ];
@@ -300,7 +340,7 @@ function getPowerStatus(Client $api, ServerTag $serverTag): string
 {
     $link = 'servers/' . $serverTag . '/power';
     try {
-        return $api->get($link)['results'] ?? '';
+        return $api->get($link)['results'] ?? 'unknown';
     } catch (Exception $e) {
         logModuleCall(
             'novoserve',
@@ -310,7 +350,7 @@ function getPowerStatus(Client $api, ServerTag $serverTag): string
             $e->getTraceAsString()
         );
 
-        return '';
+        return 'unknown';
     }
 
 }
@@ -362,6 +402,6 @@ function doPowerAction(Client $api, ServerTag $serverTag, string $action): strin
             $e->getMessage(),
             $e->getTraceAsString()
         );
-        return 'Could not perform power action on server. ' . $e->getMessage();
+        return 'Could not perform ' . $actions[$action] . ' action on server. ' . $e->getMessage();
     }
 }
