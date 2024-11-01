@@ -83,103 +83,54 @@ function novoserve_ConfigOptions(): array
  */
 function novoserve_AdminServicesTabFields(array $params): array
 {
-    try {
-        // Get all service details;
-        $apiKey = $params['configoption1'];
-        $apiSecret = $params['configoption2'];
-        $whiteLabel = is_string($params['configoption3']) ? $params['configoption3'] : 'yes';
-        $serverTag = new ServerTag($params['username']);
+    return [
+        'NovoServe Module' => <<<"EOS"
+        <script id="novoserveModule">
+            // hide ourselves!
+            jQuery("#novoserveModule").parent().parent().hide(); // <tr> > <td class="fieldarea" colspan="3"> > <script id="novoserveModule">
 
-        // Create API object;
-        $api = new Client($apiKey, $apiSecret);
-        $ipmiLink = getIpmiLink($api, $serverTag, $whiteLabel);
-        if ($ipmiLink) {
-            $ipmiLinkButton = '<a class="btn btn-primary" href="' . $ipmiLink . '" target="_blank">IPMI</a>';
-        } else {
-            $ipmiLinkButton = '<span class="btn btn-primary">IPMI unavailable</span>';
-        }
-        $powerStatus = getPowerStatus($api, $serverTag);
-
-        return [
-            'NovoServe Module' => <<<"EOS"
-            $ipmiLinkButton
-            <button type="button" class="btn btn-success" onclick="return confirm('Are you sure you want to proceed?') && runNovoModuleCommand('poweron')" name="poweron">Power On</button>
-            <button type="button" class="btn btn-danger" onclick="return confirm('Are you sure you want to proceed?') && runNovoModuleCommand('reset')" name="reset">Reset</button>
-            <button type="button" class="btn btn-danger" onclick="return confirm('Are you sure you want to proceed?') && runNovoModuleCommand('poweroff')" name="poweroff">Power Off</button>
-            <button type="button" class="btn btn-danger" onclick="return confirm('Are you sure you want to proceed?') && runNovoModuleCommand('coldboot')" name="coldboot">Cold Boot</button>
-            <span id="modpowerstatus">Power status: $powerStatus</span>
-            <span id="novoworking" style="display:none;text-align:center;">
-                <img src="images/loader.gif"> &nbsp; Working...
-            </span>
-            <script>
-                // hide the empty Module Commands row
-                jQuery('#modcmdbtns').parent().parent().hide();
-
-                function runNovoModuleCommand(cmd) {
-                    $('#growls').fadeOut('fast').remove();
-                    $('.successbox,.errorbox').slideUp('fast').remove();
-                    // Hide the modal that was activated.
-                    jQuery("[id^=modalModule]").modal("hide");
-                    jQuery('#novoworking').show();
-
-                    var reqstr = "userid=6&id=330&modop=custom&ajax=1&ac=" + cmd + "&token=" + csrfToken;
-                    WHMCS.http.jqClient.post("clientsservices.php", reqstr, function(data) {
-                        if (data.success && data.redirect) {
-                            data = data.redirect;
-                        }
-                        if (data.body) {
-                            data = data.body;
-                        }
-
-                        if (data.substr(0,9)=="redirect|") {
-                            window.location = data.substr(9);
-                        } else if (data.substr(0,7)=="window|") {
-                            window.open(data.substr(7), '_blank');
-                        } else {
-                            $("#servicecontent").html(data);
-                            $('html, body').animate({
-                                scrollTop: $('.client-tabs').offset().top - 10
-                            }, 500);
-                        }
-                    }).fail(function (xhr) {
-                        var response = (xhr.responseText != '' ? xhr.responseText : xhr.statusText);
-                        console.error('[WHMCS] Error: ' + response);
-                    }).always(function () {
-                        jQuery('#novoworking').hide();
+            jQuery('#modcmdbtns button').each(function () {
+                $(this).removeClass('btn-default');
+                if (this.id === 'btnIPMI') {
+                    $(this).addClass('btn-primary');
+                } else {
+                    if (this.id === 'btnPower_On') {
+                        $(this).addClass('btn-success');
+                    } else {
+                        $(this).addClass('btn-danger');
+                    }
+                    let originalHandler = this.onclick;
+                    this.onclick = null;
+                    $(this).off('click').on('click', function () {
+                        return confirm('Are you sure you want to proceed?') && originalHandler();
                     });
                 }
-
-            </script>
+            });
+        </script>
 EOS
-        ];
-    } catch (Exception $e) {
-        logModuleCall(
-            'novoserve',
-            __FUNCTION__,
-            $params,
-            $e->getMessage(),
-            $e->getTraceAsString()
-        );
-
-        return ['NovoServe Module' => 'Could not initialize NovoServe module, error: ' . $e->getMessage()];
-    }
+    ];
 }
 
 /*
  * Add buttons to the admin side to manage power functions as well
  * this is the official way, but we want the buttons to be together with the ipmi link, have the colours and have the warning.
  */
-/*
 function novoserve_AdminCustomButtonArray(): array
 {
     return [
+        'IPMI' => 'ipmi',
         'Power On' => 'poweron',
         'Reset' => 'reset',
         'Power Off' => 'poweroff',
         'Cold Boot' => 'coldboot',
     ];
 }
-*/
+
+function novoserve_ipmi(array $params): string
+{
+    $whiteLabel = is_string($params['configoption3']) ? $params['configoption3'] : 'yes';
+    return 'window|' . getIpmiLink(getApiClientFromParams($params), getServerTagFromParams($params), $whiteLabel);
+}
 
 function novoserve_poweron(array $params): string
 {
