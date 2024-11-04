@@ -360,7 +360,7 @@ function novoserve_AdminCustomButtonArray(array $params): array
         $link = 'servers/' . $serverTag . '/' . $action;
         try {
             $api->post($link);
-            return $actions[$action] . ' command executed.';
+            return 'success';
         } catch (Exception $e) {
             logModuleCall(
                 'novoserve',
