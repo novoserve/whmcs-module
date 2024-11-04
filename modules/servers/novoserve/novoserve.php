@@ -85,17 +85,22 @@ function novoserve_AdminServicesTabFields(array $params): array
 {
     $api = getApiClientFromParams($params);
     $serverTag = getServerTagFromParams($params);
-    $powerStatus = getPowerStatus($api, $serverTag);
     $ipmiLink = getIpmiLink($api, $serverTag, getWhitelabelFromParams($params));
-    $ipmiEnabled = $ipmiLink === '' ? 'false' : 'true';
+    $powerStatus = getPowerStatus($api, $serverTag);
+
+    if ($ipmiLink) {
+        $ipmiLinkButton = '<a href="' . $ipmiLink . '" target="_blank" class="btn btn-primary">IPMI</a>';
+    } else {
+        $ipmiLinkButton = 'IPMI not available';
+    }
 
     return [
         'NovoServe Module' => <<<"EOS"
-        <script id="novoServeModule">
-            // hide ourselves!
-            jQuery("#novoServeModule").parent().parent().hide(); // tr > td class="fieldarea" colspan="3" > script id="novoServeModule"
-            let novoServeIpmiEnabled = ${ipmiEnabled};
+        ${ipmiLinkButton}
 
+        Power status: ${powerStatus}
+
+        <script id="novoServeModule">
             function addConfirmation(button) {
                 let originalHandler = button.onclick;
                 button.onclick = null;
@@ -107,24 +112,8 @@ function novoserve_AdminServicesTabFields(array $params): array
             jQuery('#modcmdbtns button').each(function () {
                 let button = jQuery(this);
                 button.removeClass('btn-default');
-                switch (this.id) {
-                    case 'btnIPMI':
-                        // if there is no ipmi link, disable the button
-                        if (novoServeIpmiEnabled) {
-                            button.addClass('btn-primary');
-                        } else {
-                            button.attr('disabled', 'disabled');
 
-                        }
-                        break;
-                    case 'btnPower_Status':
-                        // we kind of abuse the automatically added button to just show text...
-                        button.removeClass('btn-danger');
-                        button.off('click');
-                        button.attr('disabled', 'disabled');
-                        button.css('cursor', 'default');
-                        button.text('Power status: ${powerStatus}');
-                        break;
+                switch (this.id) {
                     case 'btnPower_On':
                         button.addClass('btn-success');
                         addConfirmation(this);
@@ -135,8 +124,6 @@ function novoserve_AdminServicesTabFields(array $params): array
                         button.addClass('btn-danger');
                         addConfirmation(this)
                         break;
-                    default:
-                        // ignore other buttons
                 }
             });
         </script>
@@ -151,8 +138,6 @@ EOS
 function novoserve_AdminCustomButtonArray(array $params): array
 {
     return [
-        'IPMI' => 'ipmi',
-        'Power Status' => 'powerstatus',
         'Power On' => 'poweron',
         'Reset' => 'reset',
         'Power Off' => 'poweroff',
@@ -160,243 +145,232 @@ function novoserve_AdminCustomButtonArray(array $params): array
     ];
 }
 
-function novoserve_ipmi(array $params): string
-{
+    function novoserve_poweron(array $params): string
+    {
+        return doPowerAction(getApiClientFromParams($params), getServerTagFromParams($params), 'poweron');
+    }
 
-    return 'window|' . getIpmiLink(getApiClientFromParams($params), getServerTagFromParams($params), getWhitelabelFromParams($params));
-}
+    function novoserve_reset(array $params): string
+    {
+        return doPowerAction(getApiClientFromParams($params), getServerTagFromParams($params), 'reset');
+    }
 
-function novoserve_powerstatus(array $params): string
-{
-    return getPowerStatus(getApiClientFromParams($params), getServerTagFromParams($params));
-}
+    function novoserve_poweroff(array $params): string
+    {
+        return doPowerAction(getApiClientFromParams($params), getServerTagFromParams($params), 'poweroff');
+    }
 
-function novoserve_poweron(array $params): string
-{
-    return doPowerAction(getApiClientFromParams($params), getServerTagFromParams($params), 'poweron');
-}
+    function novoserve_coldboot(array $params): string
+    {
+        return doPowerAction(getApiClientFromParams($params), getServerTagFromParams($params), 'coldboot');
+    }
 
-function novoserve_reset(array $params): string
-{
-    return doPowerAction(getApiClientFromParams($params), getServerTagFromParams($params), 'reset');
-}
+    /**
+     * Client area output logic handling.
+     * This function is used to define module specific client area output. It should
+     * return an array consisting of a template file and optional additional
+     * template variables to make available to that template.
+     * The template file you return can be one of two types:
+     * * tabOverviewModuleOutputTemplate - The output of the template provided here
+     *   will be displayed as part of the default product/service client area
+     *   product overview page.
+     * * tabOverviewReplacementTemplate - Alternatively using this option allows you
+     *   to entirely take control of the product/service overview page within the
+     *   client area.
+     * Whichever option you choose, extra template variables are defined in the same
+     * way. This demonstrates the use of the full replacement.
+     * Please Note: Using tabOverviewReplacementTemplate means you should display
+     * the standard information such as pricing and billing details in your custom
+     * template or they will not be visible to the end user.
+     *
+     * @param array $params common module parameters
+     *
+     * @return array
+     * @see https://developers.whmcs.com/provisioning-modules/module-parameters/
+     */
+    function novoserve_ClientArea(array $params): array
+    {
+        try {
+            // Stop if service is not active;
+            $serviceStatus = $params['status'];
+            if ($serviceStatus !== 'Active') {
+                throw new Exception('Service is not active.');
+            }
 
-function novoserve_poweroff(array $params): string
-{
-    return doPowerAction(getApiClientFromParams($params), getServerTagFromParams($params), 'poweroff');
-}
+            $getPeriodStart = '';
+            $getPeriodEnd = '';
+            // Some over-engineered code to get the actual current traffic period;
+            if ($params['model']->billingcycle !== 'Free Account') {
+                $nextDueDateTime = new DateTime($params['model']->nextinvoicedate);
+                $nextDueDateDay = $nextDueDateTime->format('d');
+                $nextDueDateTime = new DateTime(date('Y-m-') . $nextDueDateDay); // Create DateTime object, it will automatically bump the date if the day is not in this month;
+                $getPeriodEndDateTime = $nextDueDateTime;
+                $getPeriodStart = $getPeriodEndDateTime->modify('-1 month')->format('d-m-Y');
 
-function novoserve_coldboot(array $params): string
-{
-    return doPowerAction(getApiClientFromParams($params), getServerTagFromParams($params), 'coldboot');
-}
+                if (date('d') < $nextDueDateDay) {
+                    $getPeriodEnd = $nextDueDateTime->format('d-m-Y');
+                } else {
+                    $getPeriodEnd = $nextDueDateTime->modify('+1 month')->format('d-m-Y');
+                }
+            }
 
-/**
- * Client area output logic handling.
- * This function is used to define module specific client area output. It should
- * return an array consisting of a template file and optional additional
- * template variables to make available to that template.
- * The template file you return can be one of two types:
- * * tabOverviewModuleOutputTemplate - The output of the template provided here
- *   will be displayed as part of the default product/service client area
- *   product overview page.
- * * tabOverviewReplacementTemplate - Alternatively using this option allows you
- *   to entirely take control of the product/service overview page within the
- *   client area.
- * Whichever option you choose, extra template variables are defined in the same
- * way. This demonstrates the use of the full replacement.
- * Please Note: Using tabOverviewReplacementTemplate means you should display
- * the standard information such as pricing and billing details in your custom
- * template or they will not be visible to the end user.
- *
- * @param array $params common module parameters
- *
- * @return array
- * @see https://developers.whmcs.com/provisioning-modules/module-parameters/
- */
-function novoserve_ClientArea(array $params): array
-{
-    try {
-        // Stop if service is not active;
-        $serviceStatus = $params['status'];
-        if ($serviceStatus !== 'Active') {
-            throw new Exception('Service is not active.');
+            // Get all service details;
+            $whiteLabel = getWhitelabelFromParams($params);
+            $serverTag = getServerTagFromParams($params);
+
+            // Create API object;
+            $api = getApiClientFromParams($params);
+
+            // Process POST requests;
+            if (!empty($_POST)) {
+                if (isset($_POST['poweron'])) {
+                    $success = doPowerAction($api, $serverTag, 'poweron');
+                }
+                if (isset($_POST['poweroff'])) {
+                    $success = doPowerAction($api, $serverTag, 'poweroff');
+                }
+                if (isset($_POST['reset'])) {
+                    $success = doPowerAction($api, $serverTag, 'reset');
+                }
+                if (isset($_POST['coldboot'])) {
+                    $success = doPowerAction($api, $serverTag, 'coldboot');
+                }
+            }
+
+            $ipmiLink = getIpmiLink($api, $serverTag, $whiteLabel);
+
+            $getBandwidthGraph = $api->get('servers/' . $serverTag . '/bandwidth/graph', [
+                'from' => strtotime($getPeriodStart),
+                'height' => 200
+            ]);
+            $getTrafficUsage = $api->get('servers/' . $serverTag . '/bandwidth', [
+                'from' => strtotime($getPeriodStart)
+            ]);
+
+            // Prepare values before loading it into template vars;
+            $getTrafficUsage['results']['dateTimeFrom'] = date('d-m-Y', strtotime($getPeriodStart));
+            $getTrafficUsage['results']['dateTimeUntil'] = date('d-m-Y', strtotime($getPeriodEnd));
+            $getTrafficUsage['results']['usage'] = round($getTrafficUsage['results']['usage'], 2);
+            $getTrafficUsage['results']['download'] = round($getTrafficUsage['results']['download'], 2);
+
+            // Load and return template with variables;
+            return [
+                'tabOverviewModuleOutputTemplate' => 'templates/main.tpl',
+                'templateVariables' => [
+                    'success' => $success ?? false,
+                    'serverTag' => $serverTag,
+                    'serverHostname' => $params['domain'],
+                    'powerStatus' => getPowerStatus($api, $serverTag),
+                    'ipmiLink' => $ipmiLink,
+                    'bandwidthGraph' => $getBandwidthGraph['results']['image'],
+                    'trafficUsage' => $getTrafficUsage['results']
+                ],
+            ];
+
+        } catch (Exception $e) {
+            logModuleCall(
+                'novoserve',
+                __FUNCTION__,
+                $params,
+                $e->getMessage(),
+                $e->getTraceAsString()
+            );
+
+            return [
+                'tabOverviewModuleOutputTemplate' => 'templates/error.tpl',
+                'templateVariables' => ['error' => $e->getMessage()],
+            ];
+        }
+    }
+
+
+    /*
+     * Functions to talk to the NovoServe public API
+     */
+
+    function getServerTagFromParams(array $params): ServerTag
+    {
+        return new ServerTag($params['username']);
+    }
+
+    function getApiClientFromParams(array $params): Client
+    {
+        $apiKey = $params['configoption1'];
+        $apiSecret = $params['configoption2'];
+        return new Client($apiKey, $apiSecret);
+    }
+
+    function getWhitelabelFromParams(array $params): string
+    {
+        return is_string($params['configoption3']) ? $params['configoption3'] : 'yes';
+    }
+
+    function getPowerStatus(Client $api, ServerTag $serverTag): string
+    {
+        $link = 'servers/' . $serverTag . '/power';
+        try {
+            return $api->get($link)['results'] ?? 'unknown';
+        } catch (Exception $e) {
+            logModuleCall(
+                'novoserve',
+                __FUNCTION__,
+                ['link' => $link],
+                $e->getMessage(),
+                $e->getTraceAsString()
+            );
+
+            return 'unknown';
         }
 
-        $getPeriodStart = '';
-        $getPeriodEnd = '';
-        // Some over-engineered code to get the actual current traffic period;
-        if ($params['model']->billingcycle !== 'Free Account') {
-            $nextDueDateTime = new DateTime($params['model']->nextinvoicedate);
-            $nextDueDateDay = $nextDueDateTime->format('d');
-            $nextDueDateTime = new DateTime(date('Y-m-') . $nextDueDateDay); // Create DateTime object, it will automatically bump the date if the day is not in this month;
-            $getPeriodEndDateTime = $nextDueDateTime;
-            $getPeriodStart = $getPeriodEndDateTime->modify('-1 month')->format('d-m-Y');
+    }
 
-            if (date('d') < $nextDueDateDay) {
-                $getPeriodEnd = $nextDueDateTime->format('d-m-Y');
-            } else {
-                $getPeriodEnd = $nextDueDateTime->modify('+1 month')->format('d-m-Y');
-            }
+    function getIpmiLink(Client $api, ServerTag $serverTag, string $whiteLabel): string
+    {
+        $link = 'servers/' . $serverTag . '/ipmi-link';
+        try {
+            // Generate an IPMI link;
+            return $api->post($link, [
+                'remoteIp' => ClientIpHelper::getClientIpAddress(),
+                'whitelabel' => $whiteLabel,
+            ])['results'] ?? '';
+
+        } catch (Exception $e) {
+            logModuleCall(
+                'novoserve',
+                __FUNCTION__,
+                ['link' => $link],
+                $e->getMessage(),
+                $e->getTraceAsString()
+            );
+
+            return '';
         }
+    }
 
-        // Get all service details;
-        $whiteLabel = getWhitelabelFromParams($params);
-        $serverTag = getServerTagFromParams($params);
-
-        // Create API object;
-        $api = getApiClientFromParams($params);
-
-        // Process POST requests;
-        if (!empty($_POST)) {
-            if (isset($_POST['poweron'])) {
-                $success = doPowerAction($api, $serverTag, 'poweron');
-            }
-            if (isset($_POST['poweroff'])) {
-                $success = doPowerAction($api, $serverTag, 'poweroff');
-            }
-            if (isset($_POST['reset'])) {
-                $success = doPowerAction($api, $serverTag, 'reset');
-            }
-            if (isset($_POST['coldboot'])) {
-                $success = doPowerAction($api, $serverTag, 'coldboot');
-            }
-        }
-
-        $ipmiLink = getIpmiLink($api, $serverTag, $whiteLabel);
-
-        $getBandwidthGraph = $api->get('servers/' . $serverTag . '/bandwidth/graph', [
-            'from' => strtotime($getPeriodStart),
-            'height' => 200
-        ]);
-        $getTrafficUsage = $api->get('servers/' . $serverTag . '/bandwidth', [
-            'from' => strtotime($getPeriodStart)
-        ]);
-
-        // Prepare values before loading it into template vars;
-        $getTrafficUsage['results']['dateTimeFrom'] = date('d-m-Y', strtotime($getPeriodStart));
-        $getTrafficUsage['results']['dateTimeUntil'] = date('d-m-Y', strtotime($getPeriodEnd));
-        $getTrafficUsage['results']['usage'] = round($getTrafficUsage['results']['usage'], 2);
-        $getTrafficUsage['results']['download'] = round($getTrafficUsage['results']['download'], 2);
-
-        // Load and return template with variables;
-        return [
-            'tabOverviewModuleOutputTemplate' => 'templates/main.tpl',
-            'templateVariables' => [
-                'success' => $success ?? false,
-                'serverTag' => $serverTag,
-                'serverHostname' => $params['domain'],
-                'powerStatus' => getPowerStatus($api, $serverTag),
-                'ipmiLink' => $ipmiLink,
-                'bandwidthGraph' => $getBandwidthGraph['results']['image'],
-                'trafficUsage' => $getTrafficUsage['results']
-            ],
+    function doPowerAction(Client $api, ServerTag $serverTag, string $action): string
+    {
+        $actions = [
+            'poweron' => 'Power on',
+            'poweroff' => 'Power off',
+            'coldboot' => 'Cold boot',
+            'reset' => 'Reset',
         ];
+        if (!isset($actions[$action])) {
+            return 'Unknown power action';
+        }
 
-    } catch (Exception $e) {
-        logModuleCall(
-            'novoserve',
-            __FUNCTION__,
-            $params,
-            $e->getMessage(),
-            $e->getTraceAsString()
-        );
-
-        return [
-            'tabOverviewModuleOutputTemplate' => 'templates/error.tpl',
-            'templateVariables' => ['error' => $e->getMessage()],
-        ];
+        $link = 'servers/' . $serverTag . '/' . $action;
+        try {
+            $api->post($link);
+            return $actions[$action] . ' command executed.';
+        } catch (Exception $e) {
+            logModuleCall(
+                'novoserve',
+                __FUNCTION__,
+                ['link' => $link],
+                $e->getMessage(),
+                $e->getTraceAsString()
+            );
+            return 'Could not perform ' . $actions[$action] . ' action on server. ' . $e->getMessage();
+        }
     }
-}
-
-
-/*
- * Functions to talk to the NovoServe public API
- */
-
-function getServerTagFromParams(array $params): ServerTag
-{
-    return new ServerTag($params['username']);
-}
-
-function getApiClientFromParams(array $params): Client
-{
-    $apiKey = $params['configoption1'];
-    $apiSecret = $params['configoption2'];
-    return new Client($apiKey, $apiSecret);
-}
-
-function getWhitelabelFromParams(array $params): string
-{
-    return is_string($params['configoption3']) ? $params['configoption3'] : 'yes';
-}
-
-function getPowerStatus(Client $api, ServerTag $serverTag): string
-{
-    $link = 'servers/' . $serverTag . '/power';
-    try {
-        return $api->get($link)['results'] ?? 'unknown';
-    } catch (Exception $e) {
-        logModuleCall(
-            'novoserve',
-            __FUNCTION__,
-            ['link' => $link],
-            $e->getMessage(),
-            $e->getTraceAsString()
-        );
-
-        return 'unknown';
-    }
-
-}
-
-function getIpmiLink(Client $api, ServerTag $serverTag, string $whiteLabel): string
-{
-    $link = 'servers/' . $serverTag . '/ipmi-link';
-    try {
-        // Generate an IPMI link;
-        return $api->post($link, [
-            'remoteIp' => ClientIpHelper::getClientIpAddress(),
-            'whitelabel' => $whiteLabel,
-        ])['results'] ?? '';
-
-    } catch (Exception $e) {
-        logModuleCall(
-            'novoserve',
-            __FUNCTION__,
-            ['link' => $link],
-            $e->getMessage(),
-            $e->getTraceAsString()
-        );
-
-        return '';
-    }
-}
-
-function doPowerAction(Client $api, ServerTag $serverTag, string $action): string
-{
-    $actions = [
-        'poweron' => 'Power on',
-        'poweroff' => 'Power off',
-        'coldboot' => 'Cold boot',
-        'reset' => 'Reset',
-    ];
-    if (!isset($actions[$action])) {
-        return 'Unknown power action';
-    }
-
-    $link = 'servers/' . $serverTag . '/' . $action;
-    try {
-        $api->post($link);
-        return $actions[$action] . ' command executed.';
-    } catch (Exception $e) {
-        logModuleCall(
-            'novoserve',
-            __FUNCTION__,
-            ['link' => $link],
-            $e->getMessage(),
-            $e->getTraceAsString()
-        );
-        return 'Could not perform ' . $actions[$action] . ' action on server. ' . $e->getMessage();
-    }
-}
