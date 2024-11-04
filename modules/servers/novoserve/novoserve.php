@@ -83,27 +83,60 @@ function novoserve_ConfigOptions(): array
  */
 function novoserve_AdminServicesTabFields(array $params): array
 {
+    $api = getApiClientFromParams($params);
+    $serverTag = getServerTagFromParams($params);
+    $powerStatus = getPowerStatus($api, $serverTag);
+    $ipmiLink = getIpmiLink($api, $serverTag, getWhitelabelFromParams($params));
+    $ipmiEnabled = $ipmiLink === '' ? 'false' : 'true';
+
     return [
         'NovoServe Module' => <<<"EOS"
-        <script id="novoserveModule">
+        <script id="novoServeModule">
             // hide ourselves!
-            jQuery("#novoserveModule").parent().parent().hide(); // <tr> > <td class="fieldarea" colspan="3"> > <script id="novoserveModule">
+            jQuery("#novoServeModule").parent().parent().hide(); // tr > td class="fieldarea" colspan="3" > script id="novoServeModule"
+            let novoServeIpmiEnabled = ${ipmiEnabled};
+
+            function addConfirmation(button) {
+                let originalHandler = button.onclick;
+                button.onclick = null;
+                $(button).off('click').on('click', function () {
+                    return confirm('Are you sure you want to proceed?') && originalHandler();
+                });
+            }
 
             jQuery('#modcmdbtns button').each(function () {
-                $(this).removeClass('btn-default');
-                if (this.id === 'btnIPMI') {
-                    $(this).addClass('btn-primary');
-                } else {
-                    if (this.id === 'btnPower_On') {
-                        $(this).addClass('btn-success');
-                    } else {
-                        $(this).addClass('btn-danger');
-                    }
-                    let originalHandler = this.onclick;
-                    this.onclick = null;
-                    $(this).off('click').on('click', function () {
-                        return confirm('Are you sure you want to proceed?') && originalHandler();
-                    });
+                let button = jQuery(this);
+                button.removeClass('btn-default');
+                switch (this.id) {
+                    case 'btnIPMI':
+                        // if there is no ipmi link, disable the button
+                        if (novoServeIpmiEnabled) {
+                            button.addClass('btn-primary');
+                        } else {
+                            button.attr('disabled', 'disabled');
+
+                        }
+                        break;
+                    case 'btnPower_Status':
+                        // we kind of abuse the automatically added button to just show text...
+                        button.removeClass('btn-danger');
+                        button.off('click');
+                        button.attr('disabled', 'disabled');
+                        button.css('cursor', 'default');
+                        button.text('Power status: ${powerStatus}');
+                        break;
+                    case 'btnPower_On':
+                        button.addClass('btn-success');
+                        addConfirmation(this);
+                        break;
+                    case 'btnReset':
+                    case 'btnPower_Off':
+                    case 'btnCold_Boot':
+                        button.addClass('btn-danger');
+                        addConfirmation(this)
+                        break;
+                    default:
+                        // ignore other buttons
                 }
             });
         </script>
@@ -113,12 +146,13 @@ EOS
 
 /*
  * Add buttons to the admin side to manage power functions as well
- * this is the official way, but we want the buttons to be together with the ipmi link, have the colours and have the warning.
+ * We do alter them a bit through javascript later on
  */
-function novoserve_AdminCustomButtonArray(): array
+function novoserve_AdminCustomButtonArray(array $params): array
 {
     return [
         'IPMI' => 'ipmi',
+        'Power Status' => 'powerstatus',
         'Power On' => 'poweron',
         'Reset' => 'reset',
         'Power Off' => 'poweroff',
@@ -128,8 +162,13 @@ function novoserve_AdminCustomButtonArray(): array
 
 function novoserve_ipmi(array $params): string
 {
-    $whiteLabel = is_string($params['configoption3']) ? $params['configoption3'] : 'yes';
-    return 'window|' . getIpmiLink(getApiClientFromParams($params), getServerTagFromParams($params), $whiteLabel);
+
+    return 'window|' . getIpmiLink(getApiClientFromParams($params), getServerTagFromParams($params), getWhitelabelFromParams($params));
+}
+
+function novoserve_powerstatus(array $params): string
+{
+    return getPowerStatus(getApiClientFromParams($params), getServerTagFromParams($params));
 }
 
 function novoserve_poweron(array $params): string
@@ -202,7 +241,7 @@ function novoserve_ClientArea(array $params): array
         }
 
         // Get all service details;
-        $whiteLabel = is_string($params['configoption3']) ? $params['configoption3'] : 'yes';
+        $whiteLabel = getWhitelabelFromParams($params);
         $serverTag = getServerTagFromParams($params);
 
         // Create API object;
@@ -285,6 +324,11 @@ function getApiClientFromParams(array $params): Client
     $apiKey = $params['configoption1'];
     $apiSecret = $params['configoption2'];
     return new Client($apiKey, $apiSecret);
+}
+
+function getWhitelabelFromParams(array $params): string
+{
+    return is_string($params['configoption3']) ? $params['configoption3'] : 'yes';
 }
 
 function getPowerStatus(Client $api, ServerTag $serverTag): string
