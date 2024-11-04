@@ -88,45 +88,43 @@ function novoserve_AdminServicesTabFields(array $params): array
     $ipmiLink = getIpmiLink($api, $serverTag, getWhitelabelFromParams($params));
     $powerStatus = getPowerStatus($api, $serverTag);
 
-    if ($ipmiLink) {
-        $ipmiLinkButton = '<a href="' . $ipmiLink . '" target="_blank" class="btn btn-primary">IPMI</a>';
-    } else {
-        $ipmiLinkButton = 'IPMI not available';
-    }
+    $ipmiText = 'IPMI' . ($ipmiLink ? '' : ' not available');
+    $disabled = $ipmiLink ? '' : ' disabled="disabled"';
 
     return [
         'NovoServe Module' => <<<"EOS"
-        ${ipmiLinkButton}
+<a href="${ipmiLink}" target="_blank" class="btn btn-primary"${disabled}>${ipmiText}</a>
 
-        Power status: ${powerStatus}
+<span id="novoServePowerStatus" style="margin-left: 2ex;">Power status: ${powerStatus}</span>
 
-        <script id="novoServeModule">
-            function addConfirmation(button) {
-                let originalHandler = button.onclick;
-                button.onclick = null;
-                $(button).off('click').on('click', function () {
-                    return confirm('Are you sure you want to proceed?') && originalHandler();
-                });
-            }
 
-            jQuery('#modcmdbtns button').each(function () {
-                let button = jQuery(this);
-                button.removeClass('btn-default');
+<script id="novoServeModule">
+    function addConfirmation(button) {
+        let originalHandler = button.onclick;
+        button.onclick = null;
+        $(button).off('click').on('click', function () {
+            return confirm('Are you sure you want to proceed?') && originalHandler();
+        });
+    }
 
-                switch (this.id) {
-                    case 'btnPower_On':
-                        button.addClass('btn-success');
-                        addConfirmation(this);
-                        break;
-                    case 'btnReset':
-                    case 'btnPower_Off':
-                    case 'btnCold_Boot':
-                        button.addClass('btn-danger');
-                        addConfirmation(this)
-                        break;
-                }
-            });
-        </script>
+    jQuery('#modcmdbtns button').each(function () {
+        let button = jQuery(this);
+        button.removeClass('btn-default');
+
+        switch (this.id) {
+            case 'btnPower_On':
+                button.addClass('btn-success');
+                addConfirmation(this);
+                break;
+            case 'btnReset':
+            case 'btnPower_Off':
+            case 'btnCold_Boot':
+                button.addClass('btn-danger');
+                addConfirmation(this)
+                break;
+        }
+    });
+</script>
 EOS
     ];
 }
