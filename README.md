@@ -6,15 +6,22 @@ This provisioning module allows you as a reseller to offer your customers full s
 With just one click they are able to login to the IPMI of the server (e.g. HPE iLO). This feature is also available as an administrator.
 
 Features:
-- Autologin IPMI for the clientarea;
-- Autologin IPMI for the admin side;
-- Whitelabel console URL generation;
-- Server power management;
-- Bandwidth usage graph;
-- Traffic usage for current period.
+- Autologin IPMI for the client area
+- Autologin IPMI for the admin side
+- Whitelabel console URL generation
+- Server power management for the client area
+- Server power management for the admin area
+- Bandwidth usage graph
+- Traffic usage for current period
 
 ### Screenshot
-[![](screenshot.png)]()
+
+#### Client Area
+[![](screenshot-client-area.png)]()
+
+#### Admin Area
+[![](screenshot-admin-area.png)]()
+
 
 ### Requirements
 - WHMCS 7.x or 8.x;
