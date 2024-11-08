@@ -83,35 +83,84 @@ function novoserve_ConfigOptions(): array
  */
 function novoserve_AdminServicesTabFields(array $params): array
 {
-    try {
-        // Get all service details;
-        $apiKey = $params['configoption1'];
-        $apiSecret = $params['configoption2'];
-        $whiteLabel = is_string($params['configoption3']) ? $params['configoption3'] : 'yes';
-        $serverTag = new ServerTag($params['username']);
+    $api = getApiClientFromParams($params);
+    $serverTag = getServerTagFromParams($params);
+    $ipmiLink = getIpmiLink($api, $serverTag, getWhitelabelFromParams($params));
+    $powerStatus = getPowerStatus($api, $serverTag);
 
-        // Create API object;
-        $api = new Client($apiKey, $apiSecret);
+    $ipmiText = 'IPMI' . ($ipmiLink ? '' : ' not available');
+    $disabled = $ipmiLink ? '' : ' disabled="disabled"';
 
-        // Generate an IPMI link;
-        $ipmiLink = $api->post('servers/' . $serverTag . '/ipmi-link', [
-            'remoteIp' => ClientIpHelper::getClientIpAddress(),
-            'whitelabel' => $whiteLabel,
-        ])['results'] ?? '';
+    return [
+        'NovoServe Module' => <<<"EOS"
+<a href="${ipmiLink}" target="_blank" class="btn btn-primary"${disabled}>${ipmiText}</a>
 
-        return ['NovoServe Module' => '<a href="' . $ipmiLink . '" target="_blank" class="btn btn-primary">IPMI</a>'];
+<span id="novoServePowerStatus" style="margin-left: 2ex;">Power status: ${powerStatus}</span>
 
-    } catch (Exception $e) {
-        logModuleCall(
-            'novoserve',
-            __FUNCTION__,
-            $params,
-            $e->getMessage(),
-            $e->getTraceAsString()
-        );
 
-        return ['NovoServe Module' => 'Could not generate IPMI link, error: ' . $e->getMessage()];
+<script id="novoServeModule">
+    function addConfirmation(button) {
+        let originalHandler = button.onclick;
+        button.onclick = null;
+        $(button).off('click').on('click', function () {
+            return confirm('Are you sure you want to proceed?') && originalHandler();
+        });
     }
+
+    jQuery('#modcmdbtns button').each(function () {
+        let button = jQuery(this);
+        button.removeClass('btn-default');
+
+        switch (this.id) {
+            case 'btnPower_On':
+                button.addClass('btn-success');
+                addConfirmation(this);
+                break;
+            case 'btnReset':
+            case 'btnPower_Off':
+            case 'btnCold_Boot':
+                button.addClass('btn-danger');
+                addConfirmation(this)
+                break;
+        }
+    });
+</script>
+EOS
+    ];
+}
+
+/*
+ * Add buttons to the admin side to manage power functions as well
+ * We do alter them a bit through javascript later on
+ */
+function novoserve_AdminCustomButtonArray(array $params): array
+{
+    return [
+        'Power On' => 'poweron',
+        'Reset' => 'reset',
+        'Power Off' => 'poweroff',
+        'Cold Boot' => 'coldboot',
+    ];
+}
+
+function novoserve_poweron(array $params): string
+{
+    return doPowerAction(getApiClientFromParams($params), getServerTagFromParams($params), 'poweron');
+}
+
+function novoserve_reset(array $params): string
+{
+    return doPowerAction(getApiClientFromParams($params), getServerTagFromParams($params), 'reset');
+}
+
+function novoserve_poweroff(array $params): string
+{
+    return doPowerAction(getApiClientFromParams($params), getServerTagFromParams($params), 'poweroff');
+}
+
+function novoserve_coldboot(array $params): string
+{
+    return doPowerAction(getApiClientFromParams($params), getServerTagFromParams($params), 'coldboot');
 }
 
 /**
@@ -147,91 +196,31 @@ function novoserve_ClientArea(array $params): array
         }
 
         // Get all service details;
-        $apiKey = $params['configoption1'];
-        $apiSecret = $params['configoption2'];
-        $whiteLabel = is_string($params['configoption3']) ? $params['configoption3'] : 'yes';
-        $serverTag = new ServerTag($params['username']);
-
-        $getPeriodStart = '';
-        $getPeriodEnd = '';
-        // Some over-engineered code to get the actual current traffic period;
-        if ($params['model']->billingcycle !== 'Free Account') {
-            $nextDueDateTime = new DateTime($params['model']->nextinvoicedate);
-            $nextDueDateDay = $nextDueDateTime->format('d');
-            $nextDueDateTime = new DateTime(date('Y-m-') . $nextDueDateDay); // Create DateTime object, it will automatically bump the date if the day is not in this month;
-            $getPeriodEndDateTime = $nextDueDateTime;
-            $getPeriodStart = $getPeriodEndDateTime->modify('-1 month')->format('d-m-Y');
-
-            if (date('d') < $nextDueDateDay) {
-                $getPeriodEnd = $nextDueDateTime->format('d-m-Y');
-            } else {
-                $getPeriodEnd = $nextDueDateTime->modify('+1 month')->format('d-m-Y');
-            }
-        }
+        $serverTag = getServerTagFromParams($params);
+        $whiteLabel = getWhitelabelFromParams($params);
 
         // Create API object;
-        $api = new Client($apiKey, $apiSecret);
+        $api = getApiClientFromParams($params);
 
         // Process POST requests;
         if (!empty($_POST)) {
-
-            // Power On;
             if (isset($_POST['poweron'])) {
-                $powerOperation = $api->post('servers/' . $serverTag . '/poweron', []);
-                $success = 'Power on command executed.';
+                $success = doPowerAction($api, $serverTag, 'poweron');
             }
-
-            // Reset;
-            if (isset($_POST['reset'])) {
-                $powerOperation = $api->post('servers/' . $serverTag . '/reset', []);
-                $success = 'Reset command executed.';
-            }
-
-            // Power Off;
             if (isset($_POST['poweroff'])) {
-                $powerOperation = $api->post('servers/' . $serverTag . '/poweroff', []);
-                $success = 'Power off command executed.';
+                $success = doPowerAction($api, $serverTag, 'poweroff');
             }
-
-            // Cold boot;
+            if (isset($_POST['reset'])) {
+                $success = doPowerAction($api, $serverTag, 'reset');
+            }
             if (isset($_POST['coldboot'])) {
-                $powerOperation = $api->post('servers/' . $serverTag . '/coldboot', []);
-                $success = 'Cold boot command executed.';
+                $success = doPowerAction($api, $serverTag, 'coldboot');
             }
-
         }
 
-        // Execute API requests;
-        try {
-            $ipmiLink = $api->post('servers/' . $serverTag . '/ipmi-link', [
-                'remoteIp' => ClientIpHelper::getClientIpAddress(),
-                'whitelabel' => $whiteLabel,
-            ])['results'] ?? '';
-        } catch (Exception $e) {
-            // Could not retrieve IPMI link/client IP, do not crash the entire page
-            logModuleCall(
-                'novoserve',
-                __FUNCTION__,
-                $params,
-                $e->getMessage(),
-                $e->getTraceAsString(),
-            );
-            $ipmiLink = '';
-        }
+        $ipmiLink = getIpmiLink($api, $serverTag, $whiteLabel);
 
-        $getBandwidthGraph = $api->get('servers/' . $serverTag . '/bandwidth/graph', [
-            'from' => strtotime($getPeriodStart),
-            'height' => 200
-        ]);
-        $getTrafficUsage = $api->get('servers/' . $serverTag . '/bandwidth', [
-            'from' => strtotime($getPeriodStart)
-        ]);
-
-        // Prepare values before loading it into template vars;
-        $getTrafficUsage['results']['dateTimeFrom'] = date('d-m-Y', strtotime($getPeriodStart));
-        $getTrafficUsage['results']['dateTimeUntil'] = date('d-m-Y', strtotime($getPeriodEnd));
-        $getTrafficUsage['results']['usage'] = round($getTrafficUsage['results']['usage'], 2);
-        $getTrafficUsage['results']['download'] = round($getTrafficUsage['results']['download'], 2);
+        $bandwidthAndTraffic = getBandwidthAndTraffic($api, $serverTag, $params);
 
         // Load and return template with variables;
         return [
@@ -240,9 +229,10 @@ function novoserve_ClientArea(array $params): array
                 'success' => $success ?? false,
                 'serverTag' => $serverTag,
                 'serverHostname' => $params['domain'],
+                'powerStatus' => getPowerStatus($api, $serverTag),
                 'ipmiLink' => $ipmiLink,
-                'bandwidthGraph' => $getBandwidthGraph['results']['image'],
-                'trafficUsage' => $getTrafficUsage['results']
+                'bandwidthGraph' => $bandwidthAndTraffic['bandwidthGraph'],
+                'trafficUsage' => $bandwidthAndTraffic['trafficUsage'],
             ],
         ];
 
@@ -260,4 +250,146 @@ function novoserve_ClientArea(array $params): array
             'templateVariables' => ['error' => $e->getMessage()],
         ];
     }
+}
+
+
+/*
+ * Functions to talk to the NovoServe public API
+ */
+
+function getServerTagFromParams(array $params): ServerTag
+{
+    return new ServerTag($params['username']);
+}
+
+function getApiClientFromParams(array $params): Client
+{
+    $apiKey = $params['configoption1'];
+    $apiSecret = $params['configoption2'];
+    return new Client($apiKey, $apiSecret);
+}
+
+function getWhitelabelFromParams(array $params): string
+{
+    return is_string($params['configoption3']) ? $params['configoption3'] : 'yes';
+}
+
+function getPowerStatus(Client $api, ServerTag $serverTag): string
+{
+    $link = 'servers/' . $serverTag . '/power';
+    try {
+        return $api->get($link)['results'] ?? 'unknown';
+    } catch (Exception $e) {
+        logModuleCall(
+            'novoserve',
+            __FUNCTION__,
+            ['link' => $link],
+            $e->getMessage(),
+            $e->getTraceAsString()
+        );
+
+        return 'unknown';
+    }
+
+}
+
+function getIpmiLink(Client $api, ServerTag $serverTag, string $whiteLabel): string
+{
+    $link = 'servers/' . $serverTag . '/ipmi-link';
+    try {
+        // Generate an IPMI link;
+        return $api->post($link, [
+            'remoteIp' => ClientIpHelper::getClientIpAddress(),
+            'whitelabel' => $whiteLabel,
+        ])['results'] ?? '';
+
+    } catch (Exception $e) {
+        logModuleCall(
+            'novoserve',
+            __FUNCTION__,
+            ['link' => $link],
+            $e->getMessage(),
+            $e->getTraceAsString()
+        );
+
+        return '';
+    }
+}
+
+function doPowerAction(Client $api, ServerTag $serverTag, string $action): string
+{
+    $actions = [
+        'poweron' => 'Power on',
+        'poweroff' => 'Power off',
+        'coldboot' => 'Cold boot',
+        'reset' => 'Reset',
+    ];
+    if (!isset($actions[$action])) {
+        return 'Unknown power action';
+    }
+
+    $link = 'servers/' . $serverTag . '/' . $action;
+    try {
+        $api->post($link);
+        return 'success';
+    } catch (Exception $e) {
+        logModuleCall(
+            'novoserve',
+            __FUNCTION__,
+            ['link' => $link],
+            $e->getMessage(),
+            $e->getTraceAsString()
+        );
+        return 'Could not perform ' . $actions[$action] . ' action on server. ' . $e->getMessage();
+    }
+}
+
+/**
+ * @return array{bandwidthGraph: string, trafficUsage: array{dateTimeFrom: string, dateTimeUntil: string, usage: float, download: float}}
+ */
+function getBandwidthAndTraffic(Client $api, ServerTag $serverTag, array $params): array
+{
+    $getPeriodStart = '';
+    $getPeriodEnd = '';
+    // Some over-engineered code to get the actual current traffic period;
+    if ($params['model']->billingcycle !== 'Free Account') {
+        $nextDueDateTime = new DateTime($params['model']->nextinvoicedate);
+        $nextDueDateDay = $nextDueDateTime->format('d');
+        $nextDueDateTime = new DateTime(date('Y-m-') . $nextDueDateDay); // Create DateTime object, it will automatically bump the date if the day is not in this month;
+        $getPeriodEndDateTime = $nextDueDateTime;
+        $getPeriodStart = $getPeriodEndDateTime->modify('-1 month')->format('d-m-Y');
+
+        if (date('d') < $nextDueDateDay) {
+            $getPeriodEnd = $nextDueDateTime->format('d-m-Y');
+        } else {
+            $getPeriodEnd = $nextDueDateTime->modify('+1 month')->format('d-m-Y');
+        }
+    }
+
+    try {
+        $getBandwidthGraph = $api->get('servers/' . $serverTag . '/bandwidth/graph', [
+            'from' => strtotime($getPeriodStart),
+            'height' => 200
+        ]);
+    } catch (Exception $e) {
+        $getBandwidthGraph = null;
+    }
+
+    try {
+        $getTrafficUsage = $api->get('servers/' . $serverTag . '/bandwidth', [
+            'from' => strtotime($getPeriodStart)
+        ]);
+        // Prepare values before loading it into template vars;
+        $getTrafficUsage['results']['dateTimeFrom'] = date('d-m-Y', strtotime($getPeriodStart));
+        $getTrafficUsage['results']['dateTimeUntil'] = date('d-m-Y', strtotime($getPeriodEnd));
+        $getTrafficUsage['results']['usage'] = round($getTrafficUsage['results']['usage'], 2);
+        $getTrafficUsage['results']['download'] = round($getTrafficUsage['results']['download'], 2);
+    } catch (Exception $e) {
+        $getTrafficUsage = null;
+    }
+
+    return [
+        'bandwidthGraph' => $getBandwidthGraph ? $getBandwidthGraph['results']['image'] : '',
+        'trafficUsage' => $getTrafficUsage ? $getTrafficUsage['results'] : [],
+    ];
 }
